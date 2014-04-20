@@ -1,2 +1,5 @@
 .Rapp.history
 .Rdata
+.Rhistory
+.sublime-project
+.sublime-workspace
