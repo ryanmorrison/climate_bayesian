@@ -1,0 +1,883 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"hist",
+				"hist_base"
+			],
+			[
+				"riparianfit",
+				"riparian.fit1"
+			],
+			[
+				"we",
+				"wetgrass"
+			],
+			[
+				"sprin",
+				"sprinkler"
+			],
+			[
+				"E_ou",
+				"E_output_2"
+			],
+			[
+				"E_q1",
+				"E_q1_cell_probs"
+			],
+			[
+				"S1",
+				"S1_site1"
+			],
+			[
+				"s1_",
+				"s1_q1_cell_probs"
+			],
+			[
+				"e_q1",
+				"e_q1_cell_probs"
+			],
+			[
+				"s1",
+				"s1_hydro_states"
+			],
+			[
+				"scenario",
+				"scenario_probs"
+			],
+			[
+				"cell",
+				"cell_diff"
+			],
+			[
+				"e_q1_cell",
+				"e_q1_cell_probs"
+			],
+			[
+				"s1_q1_cell_prob",
+				"s1_q1_cell_prob_mn"
+			],
+			[
+				"e_q1_",
+				"e_q1_prob_mn_norm"
+			],
+			[
+				"q1_",
+				"q1_e"
+			],
+			[
+				"bn",
+				"bn_existing"
+			],
+			[
+				"bn_s",
+				"bn_scenario1"
+			],
+			[
+				"red",
+				"reduced_cells_scenario2"
+			],
+			[
+				"redu",
+				"reduced_cells_scenario1"
+			],
+			[
+				"reduc",
+				"reduced_cells_existing"
+			],
+			[
+				"bn_sce",
+				"bn_scenario2"
+			],
+			[
+				"q6_cell",
+				"q6_cell_prob_mn"
+			],
+			[
+				"prob",
+				"prob_cond"
+			],
+			[
+				"post",
+				"post_entropy2"
+			],
+			[
+				"post_entro",
+				"post_entropy1"
+			],
+			[
+				"pos",
+				"post_entropy1"
+			],
+			[
+				"prio",
+				"prior_ent"
+			],
+			[
+				"prob_cond",
+				"prob_cond_log"
+			],
+			[
+				"post_bel",
+				"post_bel21"
+			],
+			[
+				"post_be",
+				"post_bel12"
+			],
+			[
+				"log",
+				"log10"
+			],
+			[
+				"cpt_P",
+				"cpt_Pollution"
+			],
+			[
+				"cancer",
+				"cancer_dag"
+			],
+			[
+				"q4_cell",
+				"q4_cell_probs"
+			],
+			[
+				"q3_cell",
+				"q3_cell_probs"
+			],
+			[
+				"q2_cell",
+				"q2_cell_probs"
+			],
+			[
+				"q1_cell",
+				"q1_cell_probs"
+			],
+			[
+				"q5",
+				"q5_cell_probs"
+			],
+			[
+				"q4",
+				"q4_prob_mn_norm"
+			],
+			[
+				"q3",
+				"q3_prob_mn_norm"
+			],
+			[
+				"q2",
+				"q2_prob_mn_norm"
+			],
+			[
+				"q1",
+				"q1_cell_prob_mn"
+			],
+			[
+				"hydro",
+				"hydro_states"
+			],
+			[
+				"q_all",
+				"q_all_prob_mn.csv"
+			],
+			[
+				"q6",
+				"q6_cell_prob_mn"
+			],
+			[
+				"q2_",
+				"q2_cell_prob_mn"
+			],
+			[
+				"emptymat",
+				"emptymatrix5"
+			],
+			[
+				"q_",
+				"q_prob_aug_sep"
+			],
+			[
+				"q_prob",
+				"q_prob_jun_jul"
+			],
+			[
+				"ep",
+				"emptymatrix1"
+			],
+			[
+				"q_cells",
+				"q1_cells"
+			],
+			[
+				"i",
+				"i"
+			],
+			[
+				"rece",
+				"recess_45d"
+			],
+			[
+				"recess",
+				"recess_7d"
+			],
+			[
+				"recess_45",
+				"recess_45d_aug_sep"
+			],
+			[
+				"recess_4",
+				"recess_45d"
+			],
+			[
+				"all",
+				"all_trim_states_s2"
+			],
+			[
+				"recess_1",
+				"recess_14d"
+			],
+			[
+				"recess_14",
+				"recess_14d_aug_sep"
+			],
+			[
+				"q_tr",
+				"q3_trim_states_s1"
+			],
+			[
+				"q",
+				"q4_trim_states_s1"
+			],
+			[
+				"p_q1",
+				"p_q1_mean"
+			],
+			[
+				"p_q1_d",
+				"p_q1_d3"
+			],
+			[
+				"sce",
+				"scenario_column"
+			],
+			[
+				"usgs_09",
+				"usgs_09430500_daily"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "r_code/1-functions.R",
+			"settings":
+			{
+				"buffer_size": 17683,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 368.0,
+		"selected_items":
+		[
+			[
+				"rep",
+				"SublimeREPL: R"
+			],
+			[
+				"re",
+				"SublimeREPL: R"
+			],
+			[
+				"repl",
+				"SublimeREPL: R"
+			],
+			[
+				"R ",
+				"R Application Switch"
+			],
+			[
+				"pa",
+				"Package Control: Install Package"
+			],
+			[
+				"LaTex",
+				"LaTeXTools: Reconfigure and migrate settings"
+			],
+			[
+				"pack",
+				"Package Control: Install Package"
+			],
+			[
+				"e",
+				"Export to HTML: Show Export Menu"
+			],
+			[
+				"exp",
+				"Export to HTML: Show Export Menu"
+			],
+			[
+				"export",
+				"Export to HTML: Show Export Menu"
+			],
+			[
+				"pac",
+				"Package Control: Disable Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"tab",
+				"Table Editor: Enable for current view"
+			],
+			[
+				"table",
+				"Table Editor: Enable for current view"
+			],
+			[
+				"rable",
+				"Table Editor: Enable for current syntax"
+			],
+			[
+				"tabl",
+				"Table Editor: Enable for current view"
+			],
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"pacak",
+				"Package Control: Enable Package"
+			],
+			[
+				"",
+				"Build: Cancel"
+			],
+			[
+				"package control",
+				"Package Control: Disable Package"
+			]
+		],
+		"width": 570.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); open(os.path.join(ipp, pf), 'wb').write(urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ','%20')).read())"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2a-historical_baseline_processing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/3-bayesian_network_construct.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/4a-implement_historical_baseline.R",
+		"/Users/Morrison/Documents/Scripts/test.sh",
+		"/Users/Morrison/scripts/test.sh",
+		"/Users/Morrison/Desktop/Shafroth et al._2010_Freshwater Biology.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/data/CUFA_150.txt",
+		"/Users/Morrison/Documents/Scripts/test2.sh",
+		"/Users/Morrison/Documents/Scripts/eject_destination.sh",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/1-functions.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/4-implement_existing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2b-future_baseline_processing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2c-historical_cufa150_processing copy.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2d-future_cufa150_processing copy 2.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/3-future_baseline_processing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2-historical_baseline_processing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/5a-implement_existing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/4-bayesian_network_construct.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2-baseline_processing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2-hydrology_processing.R",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/data/HAD_hist_150.csv",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/data/HAD_hist_base.csv",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/data/HAD_future_base.csv",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/data/HAD_future_150.csv",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/Enhanced-R.sublime-settings",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/SublimeREPL/SublimeREPL.sublime-settings",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/Enhanced-R/Enhanced-R.sublime-settings",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/SublimeREPL.sublime-settings",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/Teaching Statement/Teaching Statement.tex",
+		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/CV/Morrison CV.tex",
+		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/Research Statement/Research Statement.tex",
+		"/Users/Morrison/Downloads/Spatial E-Flows/full_article.tex",
+		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/References/References.tex",
+		"/Users/Morrison/Documents/Faculty Applications/University of Buffalo/University at Buffalo Interview/Seminar script.txt",
+		"/Users/Morrison/Documents/Faculty Applications/University of Buffalo/Research and Teaching Statement/Research Statement.tex",
+		"/Users/Morrison/Documents/Faculty Applications/San Diego State University/Research and Teaching Statement/Research Statement.tex",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/Morrison Dissertation.tex/mmd-scrivcustom-begin-doc.tex",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/Morrison Dissertation.tex/Morrison Dissertation.tex",
+		"/Users/Morrison/Documents/Dissertation/dissertation_latex/unm_begin-doc.tex",
+		"/Users/Morrison/Documents/Curriculum vitae/Latex CV/Morrison CV.tex",
+		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/LaTeX/Morrison Stone WRR Manuscript.tex",
+		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/cover letter/cover_letter.tex",
+		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/key points.txt",
+		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/cover letter/coverletter2.tex",
+		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/cover letter/coverletter.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/CV/Morrison CV.tex",
+		"/Users/Morrison/Downloads/Arc GIS 10/crack File/service.txt",
+		"/Users/Morrison/Downloads/Arc GIS 10/crack File/crack_steps.txt",
+		"/Users/Morrison/Documents/References/Bibtex/library.bib",
+		"/Users/Morrison/Library/Containers/com.apple.mail/Data/Library/Mail Downloads/31BC038E-203D-475E-899B-8256ADEAD544/Text for Mark.txt",
+		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/AGU-LaTeX/agutmpl.tex",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/LaTeX.sublime-settings",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/LaTeXTools/LaTeXTools Preferences.sublime-settings",
+		"/Users/Morrison/Dropbox/Rio Chama/documentation/docs/index.md",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/Markdown.sublime-settings",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/JSON.sublime-settings",
+		"/Users/Morrison/Dropbox/Gila Bayesian/documentation/docs/index.md",
+		"/Users/Morrison/Documents/Dissertation/dissertation_latex/signature page/sig.tex",
+		"/Users/Morrison/Dropbox/Rio Chama/documentation/mkdocs.yml",
+		"/Users/Morrison/Dropbox/Bayesian WRR Manuscript/LaTeX/Morrison Stone WRR Manuscript.tex",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/Morrison Dissertation.tex/mmd-scrivcustom-header.tex",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/data/site1_1000_to_4000.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/data/Gila-Gila.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/grid_data/Full_Mesh_Maker.m",
+		"/Users/Morrison/Dropbox/Bayesian WRR Manuscript/Auxillary Material/readme.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/grid_data/CUFA_150_gis_site1.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/grid_data/Site1_150.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/grid_data/Site1_nomin.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/1-functions.R",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/appendix/appendices.tex",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/documentation/docs/code.md",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/documentation/docs/index.md",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/documentation/mkdocs.yml",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/documentation/docs/framework.md",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/documentation/docs/data.md",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/README.md",
+		"/Users/Morrison/Dropbox/Gila Bayesian/Project Documentation/docs/index.md",
+		"/Users/Morrison/Dropbox/Gila Bayesian/Project Documentation/mkdocs.yml",
+		"/Users/Morrison/Dropbox/Gila Bayesian/Project Documentation/docs/about.md",
+		"/Library/Python/2.7/site-packages/README",
+		"/Users/Morrison/Downloads/template.tex",
+		"/Users/Morrison/Documents/Dissertation/dissertation_latex/unm_header.tex",
+		"/Users/Morrison/Documents/Dissertation/dissertation_latex/unm_footer.tex",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/Morrison Dissertation.tex/mmd-scrivcustom-footer.tex",
+		"/Users/Morrison/Dropbox/University at Buffalo Interview/Abstract.txt",
+		"/Users/Morrison/Dropbox/University at Buffalo Interview/Seminar script.txt",
+		"/Users/Morrison/Documents/Dissertation/dissertation_latex/signature page/unmthesis.sty",
+		"/Users/Morrison/Downloads/sig.tex",
+		"/var/folders/7b/dq5lc50128v_xnhnxn3lqxfc0000gn/T/tmpzyfz_u.html",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/ExportHtml/ExportHtml.sublime-settings",
+		"/Users/Morrison/Documents/Faculty Applications/CIRES:Western Water/CV/Morrison CV.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Arizona State University/CV/Morrison CV.tex",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/SublimeWritingStyle.sublime-settings",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/SublimeWritingStyle/SublimeWritingStyle.sublime-settings",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/Funding Sources/Funding Sources.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/Teaching Statement/Teaching Statement.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/Research Plan/Research Plan.tex",
+		"/Users/Morrison/Dropbox/Bayesian WRR Manuscript/Edits/Text for Mark.txt",
+		"/Users/Morrison/Library/Application Support/Sublime Text 3/Installed Packages/Dayle Rees Color Schemes.sublime-package",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/Research and Teaching Plan/Research Plan.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/References/References.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/Research and Teaching Plan/Research and Teaching Plan.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Michigan State University/Research Statement/Research Statement.tex",
+		"/Users/Morrison/Documents/Faculty Applications/Arizona State University/Teaching Statement/Teaching Statement.tex",
+		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/R Code/1-functions.R",
+		"/Users/Morrison/Desktop/weeklyupdate.html",
+		"/Users/Morrison/Desktop/Untitled.ris",
+		"/Users/Morrison/Desktop/Mendeley2.ris",
+		"/Users/Morrison/Desktop/Mendeley.ris",
+		"/Users/Morrison/Library/Containers/com.apple.mail/Data/Library/Mail Downloads/6B5244CC-840F-4BE7-922A-EC8EE2136420/weeklyupdate.html",
+		"/Users/Morrison/Documents/Dissertation/Brainstorm/discussion.txt",
+		"/Users/Morrison/Documents/Conferences/2014/Joint Aquatic Sciences/Abstract.txt",
+		"/Users/Morrison/Desktop/Test/activities/20120916-141824-Ride.gpx",
+		"/Users/Morrison/Downloads/Event_table.tgn.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/grid_data/Site4_nomin.txt",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/chapter_4_material/tables/2b-CPT.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/output/site1/CUFA_150_gis_site1.txt",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/chapter_4_material/tables/3-entropy table.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/output/site3/CUFA_150_gis_site3.txt",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/chapter_4_material/tables/2a-CPT.txt",
+		"/Users/Morrison/Desktop/Impact Factors.txt",
+		"/Users/Morrison/Documents/Dissertation/LaTeX/chapter_4_material/tables/recruitment.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/data/usgs_11251000_daily_iha.txt",
+		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/data/usgs_11251000_daily.txt",
+		"/Users/Morrison/Documents/Dissertation/Scrivener_version_2/chapter_4_material/tables/1-scenarios table.txt",
+		"/Users/Morrison/Documents/Dissertation/Scrivener_version_2/Morrison Dissertation.tex/Morrison Dissertation.tex",
+		"/Users/Morrison/Documents/Dissertation/Scrivener version 2/Morrison Dissertation.tex/Morrison Dissertation.tex"
+	],
+	"find":
+	{
+		"height": 26.0
+	},
+	"find_in_files":
+	{
+		"height": 95.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"site2",
+			"site2_1000_to_4000",
+			"site1",
+			"HB_hist_base_",
+			"hist_base",
+			"hist_",
+			"site3",
+			"hydro",
+			"E_",
+			"hydro",
+			"simulations",
+			"?",
+			"appendix",
+			"September",
+			"hydropower",
+			"acreman",
+			"L3  - papers2://.+\\n",
+			"L3 - papers2://.",
+			"L3  - papers2://.+",
+			"L3 - papers2://.",
+			"L3 - papers2://.+\\r",
+			"^M3  - ",
+			"M3  - ",
+			"M3 - ",
+			"^M3 - ",
+			"Structural",
+			"Construction",
+			"_s1",
+			"scenario1",
+			"riparian.fit4",
+			"riparian.fit2",
+			"riparian.fit3",
+			"riparian.fit2",
+			"riparian.fit1",
+			"timing",
+			"TIMING",
+			"post_belief1 <- cpquery(riparian.fit1, HYDRO==\"1\", TRUE)\npost_belief2 <- cpquery(riparian.fit1, HYDRO==\"2\", TRUE)\n\n\nprob_recession <- c(post_belief1, post_belief2, post_belief3, post_belief4, post_belief5)\nprob_recession\n\npost_belief11 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", RECESSION==\"1\")\npost_belief12 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", RECESSION==\"2\")\npost_belief13 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", RECESSION==\"3\")\npost_belief14 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", RECESSION==\"4\")\npost_belief15 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", RECESSION==\"5\")\n\npost_belief21 <- cpquery(riparian.fit1, POTENTIAL==\"N\", RECESSION==\"1\")\npost_belief22 <- cpquery(riparian.fit1, POTENTIAL==\"N\", RECESSION==\"2\")\npost_belief32 <- cpquery(riparian.fit1, POTENTIAL==\"N\", RECESSION==\"3\")\npost_belief42 <- cpquery(riparian.fit1, POTENTIAL==\"N\", RECESSION==\"4\")\npost_belief52 <- cpquery(riparian.fit1, POTENTIAL==\"N\", RECESSION==\"5\")\n\nprob_cond <- matrix(c(0.000001, post_belief12, post_belief13, post_belief14, post_belief15, post_belief21, post_belief22, post_belief32, post_belief42, post_belief52), nrow=5) # The post_belief11 variable was replaced with 0.000001 because the log2 of 0 is negative infinity\nprob_cond\nprob_cond_log <- log2(prob_cond)\nprob_cond_prod <- prob_cond * log2(prob_cond)",
+			"TIMING",
+			"site3",
+			"S1_",
+			"E_",
+			"site1",
+			"site5",
+			"site4",
+			"site3",
+			"E_",
+			"site1",
+			"site3",
+			"site1",
+			"site3",
+			"site2",
+			"S@_",
+			"E_",
+			"site1",
+			"site2",
+			"site1",
+			"E_",
+			"S1_",
+			"E_",
+			"e_",
+			"e_alldata <- read.table(\"data/s1_1000_to_2000_trim.txt\", header=FALSE, skip=0)\ncolnames(e_alldata) <- c(\"cell\", \"flood_cfs\")\n\ne_q1_cells <- subset(e_alldata, flood_cfs>q_bin[1] & flood_cfs<q_bin[2])\ne_hydro_states <- cbind(hydro, timing_state, recess_state)\ne_hydro_states <- subset(e_hydro_states, TIMING != \"NA\" & RECESSION != 1)\ne_timing_subset <- e_hydro_states[,14]\ne_recess_subset <- e_hydro_states[,15]\n\noptions(bigmemory.allow.dimnames=TRUE)\n\ne_emptymatrix1 <- big.matrix(nrow=nrow(e_hydro_states), ncol=(nrow(e_q1_cells)+2), dimnames=list(NULL, c(\"timing\", \"recess\", as.character(e_q1_cells[,1]))))\n\ne_emptymatrix1[,1] <- as.vector(as.matrix(e_timing_subset))\ne_emptymatrix1[,2] <- as.vector(as.matrix(e_recess_subset))\nfor (i in 1:nrow(e_q1_cells)) {\n  e_emptymatrix1[,i+2] <- e_q1_cells[i,2]<=e_hydro_states[,2]\n}\n\ne_evidence1 <- populate.evidence(e_q1_cells, e_emptymatrix1)\n\ne_q1_cell_probs <- lapply(e_evidence1, apply, 1, function(x) cpquery(riparian.fit1, (POTENTIAL==\"Y\"), evidence=as.list(x), method=\"lw\"))\n\ne_q1_cell_prob_mn <- t(data.frame(lapply(e_q1_cell_probs, mean, na.rm=TRUE), check.names=FALSE))\n\ne_q1_norm <- normalize(e_hydro_states, e_q1_cell_probs)\n\ne_q1_prob_mn_norm <- e_q1_cell_prob_mn * e_q1_norm\n\nrow.names(e_q1_prob_mn_norm) <- row.names(e_q1_cell_prob_mn)",
+			"Arizona",
+			"alldata",
+			"_cell",
+			"send",
+			"s1",
+			"hydro_states",
+			"s1",
+			"q1",
+			"_s1",
+			"scenario1",
+			"hydro",
+			"_e",
+			":100",
+			"hydro",
+			"_s1",
+			"s1",
+			"_e",
+			"q1",
+			"_s1",
+			"scenario1",
+			"trim_states_e",
+			"_s1",
+			"q1",
+			"_scenario1",
+			"_states",
+			"hydro",
+			"q5",
+			"q4",
+			"q3",
+			"q4",
+			"q3",
+			"q2",
+			"q1"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"site2",
+			"HB_",
+			"hist_150",
+			"future_150",
+			"future_cufa150",
+			"hist_cufa150",
+			"future_",
+			"site1",
+			"hist_base",
+			"HB_",
+			"BASE_",
+			"hist_base",
+			"hydro",
+			"",
+			"DO  - ",
+			"DO  -",
+			"_pd",
+			"postdam",
+			"riparian.fit6",
+			"riparian.fit5",
+			"riparian.fit4",
+			"riparian.fit3",
+			"riparian.fit2",
+			"depth",
+			"DEPTH",
+			"RECESSION",
+			"post_belief11 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", TIMING==\"1\")\npost_belief12 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", TIMING==\"2\")\npost_belief13 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", TIMING==\"3\")\n\npost_belief21 <- cpquery(riparian.fit1, POTENTIAL==\"N\", TIMING==\"1\")\npost_belief22 <- cpquery(riparian.fit1, POTENTIAL==\"N\", TIMING==\"2\")\npost_belief32 <- cpquery(riparian.fit1, POTENTIAL==\"N\", TIMING==\"3\")\n\nprob_cond <- matrix(c(post_belief11, post_belief12, post_belief13, post_belief21, post_belief22, post_belief32), nrow=3)\nprob_cond\nprob_cond_log <- log2(prob_cond)\nprob_cond_prod <- prob_cond * log2(prob_cond)\n\npost_entropy <- -1*(prob_timing[1] * sum(prob_cond_prod[1,]) + prob_timing[2] * sum(prob_cond_prod[2,]) + prob_timing[3] * sum(prob_cond_prod[3,]))\npost_entropy 	# ~0.029\n\n(prior_entropy - post_entropy) # ~0.0002\n\n(prior_entropy - post_entropy)/prior_entropy*100 	# ~0.74%",
+			"TIMING==\"1\")\npost_belief12 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", TIMING==\"2\")\npost_belief13 <- cpquery(riparian.fit1, POTENTIAL==\"Y\", TIMING==\"3\")\n\npost_belief21 <- cpquery(riparian.fit1, POTENTIAL==\"N\", TIMING==\"1\")\npost_belief22 <- cpquery(riparian.fit1, POTENTIAL==\"N\", TIMING==\"2\")\npost_belief32 <- cpquery(riparian.fit1, POTENTIAL==\"N\", TIMING==\"3\")\n\nprob_cond <- matrix(c(post_belief11, post_belief12, post_belief13, post_belief21, post_belief22, post_belief32), nrow=3)\nprob_cond\nprob_cond_log <- log2(prob_cond)\nprob_cond_prod <- prob_cond * log2(prob_cond)\n\npost_entropy <- -1*(prob_timing[1] * sum(prob_cond_prod[1,]) + prob_timing[2] * sum(prob_cond_prod[2,]) + prob_timing[3] * sum(prob_cond_prod[3,]))\npost_entropy 	# ~0.029\n\n(prior_entropy - post_entropy) # ~0.0002\n\n(prior_entropy - post_entropy)/prior_entropy*100 	# ~0.74%",
+			"TIMING",
+			"site1",
+			"S2_",
+			"S1_",
+			"site2",
+			"site1",
+			"site5",
+			"site4",
+			"S2_",
+			"S1_",
+			"S2_",
+			"S1_",
+			"site3",
+			"site1",
+			"site3",
+			"site1",
+			"site3",
+			"S2_",
+			"S@_",
+			"S1_",
+			"S2_",
+			"S1_",
+			"site2",
+			"site1",
+			"site2",
+			"S2_",
+			"S1_",
+			"S2_",
+			"S1_",
+			"s1_",
+			"alldata_s1",
+			"",
+			"s2",
+			"s1_states",
+			"s2",
+			"q6",
+			"q5",
+			"q4",
+			"q3",
+			"q2",
+			"q6",
+			"q5",
+			"q4",
+			"q3",
+			"q2",
+			"_s2",
+			"scenario2",
+			"scenario1",
+			"_s1",
+			":25",
+			"",
+			"s2",
+			"_s2",
+			"_s1",
+			"q6",
+			"q5",
+			"q4",
+			"q3",
+			"q2",
+			"_s2",
+			"scenario2",
+			"trim_states",
+			"_e",
+			"",
+			"q6",
+			"q5",
+			"q4",
+			"q3",
+			"q2",
+			"q6",
+			"q5",
+			"q4",
+			"q3",
+			"q2",
+			"_s1",
+			"_states_scenario1",
+			"scenario1",
+			"q6",
+			"q5",
+			"q4",
+			"q3",
+			"q4",
+			"q3",
+			"q2"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "r_code/1-functions.R",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 17683,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6735,
+								6735
+							]
+						],
+						"settings":
+						{
+							"WordCountShouldRun": true,
+							"bs_sintax": "enhanced-r",
+							"buffer_scroll_name": "068a2aeb",
+							"syntax": "Packages/Enhanced-R/support/Enhanced-R.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 34.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 128.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 128.0
+	},
+	"project": "climate_bayesian.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 215.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
