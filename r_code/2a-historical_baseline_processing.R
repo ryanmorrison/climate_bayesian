@@ -16,13 +16,13 @@ hist_base <- climate.hydrology("data/HAD_hist_base.csv")
 # The regression equation was developed using historical gage data, and changes depending on the site location
 
 # SITE 1
-head_conv <- function(Q) 0.0011*Q
+# head_conv <- function(Q) 0.0011*Q
 
 # SITE 2
 # head_conv <- function(Q) 0.0011*Q
 
 # SITE 3
-# head_conv <- function(Q) 0.056*(Q^0.5612)
+head_conv <- function(Q) 0.056*(Q^0.5612)
 
 # SITE 4
 # head_conv <- function(Q) 0.0014*(Q^0.99)

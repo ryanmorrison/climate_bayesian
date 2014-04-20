@@ -1,1332 +1,412 @@
-q6_state <- q.states(hist_base, q_bin, 6)
-q7_state <- q.states(hist_base, q_bin, 7)
-head(hist_base)
-b <- nrow(hist_base)
-b
-a <- NULL
-c <- NULL
-for (i in 1:b) a[i] <- format(data[i,1], "%m")
-a <- vector(1:b)
-b <- nrow(hist_base)
-a <- vector()
-for (i in 1:b) a[i] <- format(data[i,1], "%m")
-a <- NULL
-c <- NULL
-for (i in 1:b) a[i] <- format(hist_base[i,1], "%m")
-for (i in 1:b) {#
-  if (a[i] == "04" | a[i] == "05") c[i] <- 1#
-  else if (a[i] == "06" | a[i] == "07") c[i] <- 2#
-  else if (a[i] == "08" | a[i] == "09") c[i] <- 3#
-  else c[i] <- NA#
-  }
-head(a)
-head(a)[1:100]
-head(hist_base)[1:50]
-head(hist_base)(1:50)
-head(a, n=100)
-head(a, n=200)
-is.na(a)
-Hydrologic Data Processessing #####
-library(xts)#
-library(prob)#
-library(TTR)#
-library(bigmemory)#
-#
-#### Set working directory #####
-setwd("/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian")#
-#
-#### Source common functions #####
-source('~/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/1-functions.R')#
-#
-hist_base <- climate.hydrology("data/HAD_hist_base.csv")#
-#
-#### Add stage values (feet and cm) to data frame based on a regression equation #####
-# The regression equation was developed using historical gage data, and changes depending on the site location#
-#
-# sitenum <- site2#
-# if (sitenum==site1) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site2) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site3) head_conv <- function(Q) 0.056*(Q^0.5612)#
-# else if (sitenum==site4) head_conv <- function(Q) 0.0014*(Q^0.99)#
-# elseif (sitenum==site5) head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-# SITE 1#
-head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 2#
-# head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 3#
-# head_conv <- function(Q) 0.056*(Q^0.5612)#
-#
-# SITE 4#
-# head_conv <- function(Q) 0.0014*(Q^0.99)#
-#
-# SITE 5#
-# head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-hist_base_stage <- stage(hist_base, head_conv)#
-hist_base <- data.frame(hist_base, hist_base_stage)#
-#
-#### Calculate recession rates #####
-# The 1-, 2-, ... , 7-day, 14-day recession rates were computed#
-recess_1d <- recession.rate.forward(hist_base, 1)#
-recess_2d <- recession.rate.forward(hist_base, 2)#
-recess_3d <- recession.rate.forward(hist_base, 3)#
-recess_4d <- recession.rate.forward(hist_base, 4)#
-recess_5d <- recession.rate.forward(hist_base, 5)#
-recess_6d <- recession.rate.forward(hist_base, 6)#
-recess_7d <- recession.rate.forward(hist_base, 7)#
-recess_14d <- recession.rate.forward(hist_base, 14)#
-recess_30d <- recession.rate.forward(hist_base, 30)#
-recess_45d <- recession.rate.forward(hist_base, 45)#
-#
-hist_base <- cbind(hist_base, recess_1d, recess_2d, recess_3d, recess_4d, recess_5d, recess_6d, recess_7d, recess_14d, recess_30d, recess_45d)#
-colnames(hist_base)[5:14] <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-#
-#### Process Q-model bins #####
-# Model Q-bins were selected so that inundation areas increased by less than 15% between the discharge associated with each bin#
-# q_bin <- c(719, 1209, 2100, 4000, 6296, 11300)#
-# q_bin <- c(1000, 1200, 1400, 1600, 1800, 2000, 2200)#
-q_bin <- c(1000, 1500, 2000, 2500, 3000, 3500, 4000)#
-#
-# Calculate probability of flooding in each bin for the entire year#
-q_bin_prob <- q.prob(hist_base, q_bin)#
-#
-# Calculate probabilities in each bin according to discrete timing states#
-# The discrete timing states are April-May, June-July, August-September#
-hist_base_monthly <- subset.month(hist_base)#
-#
-apr_may <- list.to.df(hist_base_monthly[[1]])#
-jun_jul <- list.to.df(hist_base_monthly[[2]])#
-aug_sep <- list.to.df(hist_base_monthly[[3]])#
-#
-q_prob_apr_may <- q.prob(apr_may, q_bin)#
-q_prob_jun_jul <- q.prob(jun_jul, q_bin)#
-q_prob_aug_sep <- q.prob(aug_sep, q_bin)#
-#
-q_prob_all <- data.frame(q_prob_apr_may, q_prob_jun_jul, q_prob_aug_sep)#
-# write.table(q_prob_all, "output/q_prob_all.txt", sep="\t")#
-#
-# Test calculations#
-# R <- probspace(apr_may)#
-# Y <- prob(R, cfs>=719)#
-##
-# C <- count(apr_may$cfs>=719)#
-#
-#### Calculate probabilities for recession rates #####
-# Test calculations#
-# S <- probspace(apr_may)#
-# P <- prob(S, recess_6d>=6)#
-# X <- S[["recess_1d"]]#
-#
-# Set discrete states for recession rates (in cm/day)#
-recess_rates <- c(0, 1, 3, 6)#
-#
-# Calculate recession rate probabilities for April-May#
-recess_1d_apr_may <- r.prob(apr_may, "recess_1d", recess_rates)#
-recess_2d_apr_may <- r.prob(apr_may, "recess_2d", recess_rates)#
-recess_3d_apr_may <- r.prob(apr_may, "recess_3d", recess_rates)#
-recess_4d_apr_may <- r.prob(apr_may, "recess_4d", recess_rates)#
-recess_5d_apr_may <- r.prob(apr_may, "recess_5d", recess_rates)#
-recess_6d_apr_may <- r.prob(apr_may, "recess_6d", recess_rates)#
-recess_7d_apr_may <- r.prob(apr_may, "recess_7d", recess_rates)#
-recess_14d_apr_may <- r.prob(apr_may, "recess_14d", recess_rates)#
-recess_30d_apr_may <- r.prob(apr_may, "recess_30d", recess_rates)#
-recess_45d_apr_may <- r.prob(apr_may, "recess_45d", recess_rates)#
-#
-recess_all_apr_may <- cbind(recess_1d_apr_may, recess_2d_apr_may, recess_3d_apr_may, recess_4d_apr_may, recess_5d_apr_may, recess_6d_apr_may, recess_7d_apr_may, recess_14d_apr_may, recess_30d_apr_may, recess_45d_apr_may)#
-colnames(recess_all_apr_may) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_apr_may) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_apr_may <- t(recess_all_apr_may)#
-# write.table(recess_all_apr_may, "output/recess_all_apr_may.txt", sep="\t")#
-#
-# Calculate recession rate probabilities for June-July#
-recess_1d_jun_jul <- r.prob(jun_jul, "recess_1d", recess_rates)#
-recess_2d_jun_jul <- r.prob(jun_jul, "recess_2d", recess_rates)#
-recess_3d_jun_jul <- r.prob(jun_jul, "recess_3d", recess_rates)#
-recess_4d_jun_jul <- r.prob(jun_jul, "recess_4d", recess_rates)#
-recess_5d_jun_jul <- r.prob(jun_jul, "recess_5d", recess_rates)#
-recess_6d_jun_jul <- r.prob(jun_jul, "recess_6d", recess_rates)#
-recess_7d_jun_jul <- r.prob(jun_jul, "recess_7d", recess_rates)#
-recess_14d_jun_jul <- r.prob(jun_jul, "recess_14d", recess_rates)#
-recess_30d_jun_jul <- r.prob(jun_jul, "recess_30d", recess_rates)#
-recess_45d_jun_jul <- r.prob(jun_jul, "recess_45d", recess_rates)#
-#
-recess_all_jun_jul <- cbind(recess_1d_jun_jul, recess_2d_jun_jul, recess_3d_jun_jul, recess_4d_jun_jul, recess_5d_jun_jul, recess_6d_jun_jul, recess_7d_jun_jul, recess_14d_jun_jul, recess_30d_jun_jul, recess_45d_jun_jul)#
-colnames(recess_all_jun_jul) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_jun_jul) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_jun_jul <- t(recess_all_jun_jul)#
-# write.table(recess_all_jun_jul, "output/recess_all_jun_jul.txt", sep="\t")#
-#
-# Calculate recession rate probabilities for August-September#
-recess_1d_aug_sep <- r.prob(aug_sep, "recess_1d", recess_rates)#
-recess_2d_aug_sep <- r.prob(aug_sep, "recess_2d", recess_rates)#
-recess_3d_aug_sep <- r.prob(aug_sep, "recess_3d", recess_rates)#
-recess_4d_aug_sep <- r.prob(aug_sep, "recess_4d", recess_rates)#
-recess_5d_aug_sep <- r.prob(aug_sep, "recess_5d", recess_rates)#
-recess_6d_aug_sep <- r.prob(aug_sep, "recess_6d", recess_rates)#
-recess_7d_aug_sep <- r.prob(aug_sep, "recess_7d", recess_rates)#
-recess_14d_aug_sep <- r.prob(aug_sep, "recess_14d", recess_rates)#
-recess_30d_aug_sep <- r.prob(aug_sep, "recess_30d", recess_rates)#
-recess_45d_aug_sep <- r.prob(aug_sep, "recess_45d", recess_rates)#
-#
-recess_all_aug_sep <- cbind(recess_1d_aug_sep, recess_2d_aug_sep, recess_3d_aug_sep, recess_4d_aug_sep, recess_5d_aug_sep, recess_6d_aug_sep, recess_7d_aug_sep, recess_14d_aug_sep, recess_30d_aug_sep, recess_45d_aug_sep)#
-colnames(recess_all_aug_sep) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_aug_sep) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_aug_sep <- t(recess_all_aug_sep)#
-# recess_all_aug_sep[,5] <- recess_all_aug_sep[,5] + 0.0002154 # Add small number to get probability sums to equal 1#
-# write.table(recess_all_aug_sep, "output/recess_all_aug_sep.txt", sep="\t")#
-#
-recess_prob_all <- cbind(recess_all_apr_may, recess_all_jun_jul, recess_all_aug_sep)#
-# write.table(recess_prob_all, "output/recess_prob_all.txt", sep="\t")#
-# recess_prob_all[,5] <- recess_prob_all[,5] + 0.00215#
-#
-#### Populate network states based on scenarios #####
-# Discrete states (1, 2, 3) based on the timing#
-timing_state <- timing.states(hist_base)
-q1_state <- q.states(hist_base, q_bin, 1)
-q2_state <- q.states(hist_base, q_bin, 2)
-q3_state <- q.states(hist_base, q_bin, 3)
-q4_state <- q.states(hist_base, q_bin, 4)
-q6_state <- q.states(hist_base, q_bin, 6)
-q5_state <- q.states(hist_base, q_bin, 5)
-q7_state <- q.states(hist_base, q_bin, 7)
-recess_state <- recess.states(hist_base, recess_rates, "recess_14d")
-Load packages
+dim_FLOOD <- c("Yes", "No")
+dim_RECESSION <- c("<1cm/s", "1-3 cm/s", ">3 cm/s")
+dim_DURATION <- c("<24 hrs", ">24 hrs")
+dim_HYDRO_COND <- c("Low", "Medium", "High")
+cpt_TIMING <- matrix(c(0.0, 0.0, 1), ncol=3, dimnames=list(NULL, "TIMING"=dim_TIMING))
+cpt_FLOOD <- matrix(c(0.5, 0.5, 0.75, 0.25, 0.3, 0.7), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
+cpt_RECESSION <- matrix(c(0.2, 0.5, 0.3, 1, 0, 0), ncol=2, dimnames=list("RECESSION"=dim_RECESSION, "FLOOD"=dim_FLOOD))
+cpt_DURATION <- matrix(c(0.2, 0.8, 1, 0), ncol=2, dimnames=list("DURATION"=dim_DURATION, "FLOOD"=dim_FLOOD))
+cpt_HYDRO_COND <- c(0.3, 0.3, 0.7, 0.4, 0.5, 0.9, 0.5, 0.3, 0.2, 0.5, 0.2, 0.05, 0.2, 0.4, 0.1, 0.1, 0.3, 0.05)
+cpt_HYDRO_COND <- c(0.3, 0.5, 0.2, 0.3, 0.3, 0.4, 0.7, 0.2, 0.1, 0.4, 0.5, 0.1, 0.5, 0.2, 0.3, 0.9, 0.05, 0.05)
+dim(cpt_HYDRO_COND) <- c(3, 3, 2)
+dimnames(cpt_HYDRO_COND) <- list("HYDRO_COND"=dim_HYDRO_COND, "RECESSION"=dim_RECESSION, "DURATION"=dim_DURATION)
+hydro.fit <- custom.fit(hydro, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD, RECESSION=cpt_RECESSION, DURATION=cpt_DURATION, HYDRO_CONDITIONS=cpt_HYDRO_COND))
 Load "bnlearn" package
 library(bnlearn)
-riparian_var <- c("TIMING", "FLOOD", "RECESSION", "HYDRO", "DEPTH", "POTENTIAL")
-riparian_dag <- empty.graph(riparian_var)
-arcs(riparian_dag) <- matrix(
-c("TIMING", "FLOOD", "TIMING", "RECESSION", "RECESSION", "HYDRO", "FLOOD", "HYDRO", "DEPTH", "POTENTIAL", "HYDRO", "POTENTIAL"),
+Name network variables
+hydro_var <- c("TIMING", "FLOOD", "RECESSION", "DURATION", "HYDRO_COND")
+Create empty network
+hydro <- empty.graph(hydro_var)
+Connect variables with directed arcs
+arcs(hydro) <- matrix(
+c("TIMING", "FLOOD", "FLOOD", "RECESSION", "FLOOD", "DURATION", "DURATION", "HYDRO_COND", "RECESSION", "HYDRO_COND"),
 ncol = 2, byrow = TRUE,
 dimnames = list(c(), c("from", "to")))
-dim_TIMING <- c(1, 2, 3)
-dim_FLOOD <- c(1, 0)
-dim_RECESSION <- c(1, 2, 3, 4, 5)
-dim_HYDRO <- c("L", "H")
-dim_DEPTH <- c(1, 2, 3)
-dim_POTENTIAL <- c("Y", "N")
-cpt_TIMING <- matrix(c(0.65, 0.25, 0.1), ncol=3, dimnames=list(NULL, "TIMING"=dim_TIMING))
-cpt_FLOOD1 <- matrix(as.matrix(q_prob_all[2, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
-cpt_FLOOD2 <- matrix(as.matrix(q_prob_all[3, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
-cpt_FLOOD3 <- matrix(as.matrix(q_prob_all[4, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
-cpt_FLOOD4 <- matrix(as.matrix(q_prob_all[5, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
-cpt_FLOOD5 <- matrix(as.matrix(q_prob_all[6, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
-cpt_FLOOD6 <- matrix(as.matrix(q_prob_all[7, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
-cpt_FLOOD7 <- matrix(as.matrix(q_prob_all[8, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
-cpt_RECESSION <- matrix(recess_prob_all[8, ], ncol=3, dimnames=list("RECESSION"=dim_RECESSION, "TIMING"=dim_TIMING)) # Row 8 refers to the 14-day avg forward recession rate
-cpt_RECESSION <- cpt.roundoff(cpt_RECESSION)
-cpt_HYDRO <- matrix(c(1, 0, 1, 0, 0.05, 0.95, 1, 0, 0.1, 0.9, 1, 0, 0.3, 0.7, 1, 0, 0.9, 0.1, 1, 0))
-dim(cpt_HYDRO) <- c(2, 2, 5)
-dimnames(cpt_HYDRO) <- list("HYDRO"=dim_HYDRO, "FLOOD"=dim_FLOOD, "RECESSION"=dim_RECESSION)
-cpt_DEPTH <- matrix(c(0.33, 0.33, 0.34), ncol=3, dimnames=list(NULL, "DEPTH"=dim_DEPTH))
-cpt_POTENTIAL <- matrix(c(0, 1, 0.7, 0.3, 0, 1, 0.9, 0.1, 0, 1, 0.7, 0.3), ncol=3)
-dim(cpt_POTENTIAL) <- c(2, 2, 3)
-dimnames(cpt_POTENTIAL) <- list("POTENTIAL"=dim_POTENTIAL, "HYDRO"=dim_HYDRO, "DEPTH"=dim_DEPTH)
-riparian.fit1 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD1, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-riparian.fit2 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD2, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-riparian.fit3 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD3, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-riparian.fit4 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD4, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-riparian.fit5 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD5, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-riparian.fit6 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD6, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-riparian.fit7 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD7, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-set.seed(140)
-Change input table depending on the site number
-HB_alldata <- read.table("data/site1_1000_to_4000.txt", header=FALSE, skip=0)
-HB_alldata <- read.table("data/site1_1000_to_4000.txt", header=FALSE, skip=0)
-colnames(HB_alldata) <- c("cell", "flood_cfs")
-HB_q1_cells <- subset(HB_alldata, flood_cfs>q_bin[1] & flood_cfs<q_bin[2])
-HB_q2_cells <- subset(HB_alldata, flood_cfs>=q_bin[2] & flood_cfs<q_bin[3])
-HB_q3_cells <- subset(HB_alldata, flood_cfs>=q_bin[3] & flood_cfs<q_bin[4])
-HB_q4_cells <- subset(HB_alldata, flood_cfs>=q_bin[4] & flood_cfs<q_bin[5])
-HB_q5_cells <- subset(HB_alldata, flood_cfs>=q_bin[5] & flood_cfs<q_bin[6])
-HB_q6_cells <- subset(HB_alldata, flood_cfs>=q_bin[6] & flood_cfs<q_bin[7])
-HB_q7_cells <- subset(HB_alldata, flood_cfs>=q_bin[7])
-HB_hist_base_states <- cbind(hist_base, timing_state, recess_state)
-Trim data frame based on timing and recession rates
-HB_hist_base_states <- subset(HB_hist_base_states, TIMING != "NA" & RECESSION != 1)
-HB_timing_subset <- HB_hist_base_states[,15]
-HB_recess_subset <- HB_hist_base_states[,16]
-save(HB_hist_base_states, file="output/site3/HB_hist_base_states.Rdata")
-save(HB_hist_base_states, file="output/site1/HB_hist_base_states.Rdata")
-Hydrologic Data Processessing #####
-library(xts)#
-library(prob)#
-library(TTR)#
-library(bigmemory)#
-#
-#### Set working directory #####
-setwd("/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian")#
-#
-#### Source common functions #####
-source('~/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/1-functions.R')#
-#
-future_base <- climate.hydrology("data/HAD_future_base.csv")#
-#
-#### Add stage values (feet and cm) to data frame based on a regression equation #####
-# The regression equation was developed using historical gage data, and changes depending on the site location#
-#
-# sitenum <- site2#
-# if (sitenum==site1) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site2) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site3) head_conv <- function(Q) 0.056*(Q^0.5612)#
-# else if (sitenum==site4) head_conv <- function(Q) 0.0014*(Q^0.99)#
-# elseif (sitenum==site5) head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-# SITE 1#
-head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 2#
-# head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 3#
-# head_conv <- function(Q) 0.056*(Q^0.5612)#
-#
-# SITE 4#
-# head_conv <- function(Q) 0.0014*(Q^0.99)#
-#
-# SITE 5#
-# head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-future_base_stage <- stage(future_base, head_conv)#
-future_base <- data.frame(future_base, future_base_stage)#
-#
-#### Calculate recession rates #####
-# The 1-, 2-, ... , 7-day, 14-day recession rates were computed#
-recess_1d <- recession.rate.forward(future_base, 1)#
-recess_2d <- recession.rate.forward(future_base, 2)#
-recess_3d <- recession.rate.forward(future_base, 3)#
-recess_4d <- recession.rate.forward(future_base, 4)#
-recess_5d <- recession.rate.forward(future_base, 5)#
-recess_6d <- recession.rate.forward(future_base, 6)#
-recess_7d <- recession.rate.forward(future_base, 7)#
-recess_14d <- recession.rate.forward(future_base, 14)#
-recess_30d <- recession.rate.forward(future_base, 30)#
-recess_45d <- recession.rate.forward(future_base, 45)#
-#
-future_base <- cbind(future_base, recess_1d, recess_2d, recess_3d, recess_4d, recess_5d, recess_6d, recess_7d, recess_14d, recess_30d, recess_45d)#
-colnames(future_base)[5:14] <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-#
-#### Process Q-model bins #####
-# Model Q-bins were selected so that inundation areas increased by less than 15% between the discharge associated with each bin#
-# q_bin <- c(719, 1209, 2100, 4000, 6296, 11300)#
-# q_bin <- c(1000, 1200, 1400, 1600, 1800, 2000, 2200)#
-q_bin <- c(1000, 1500, 2000, 2500, 3000, 3500, 4000)#
-#
-# Calculate probability of flooding in each bin for the entire year#
-q_bin_prob <- q.prob(future_base, q_bin)#
-#
-# Calculate probabilities in each bin according to discrete timing states#
-# The discrete timing states are April-May, June-July, August-September#
-future_base_monthly <- subset.month(future_base)#
-#
-apr_may <- list.to.df(future_base_monthly[[1]])#
-jun_jul <- list.to.df(future_base_monthly[[2]])#
-aug_sep <- list.to.df(future_base_monthly[[3]])#
-#
-q_prob_apr_may <- q.prob(apr_may, q_bin)#
-q_prob_jun_jul <- q.prob(jun_jul, q_bin)#
-q_prob_aug_sep <- q.prob(aug_sep, q_bin)#
-#
-q_prob_all <- data.frame(q_prob_apr_may, q_prob_jun_jul, q_prob_aug_sep)#
-# write.table(q_prob_all, "output/q_prob_all.txt", sep="\t")#
-#
-# Test calculations#
-# R <- probspace(apr_may)#
-# Y <- prob(R, cfs>=719)#
-##
-# C <- count(apr_may$cfs>=719)#
-#
-#### Calculate probabilities for recession rates #####
-# Test calculations#
-# S <- probspace(apr_may)#
-# P <- prob(S, recess_6d>=6)#
-# X <- S[["recess_1d"]]#
-#
-# Set discrete states for recession rates (in cm/day)#
-recess_rates <- c(0, 1, 3, 6)#
-#
-# Calculate recession rate probabilities for April-May#
-recess_1d_apr_may <- r.prob(apr_may, "recess_1d", recess_rates)#
-recess_2d_apr_may <- r.prob(apr_may, "recess_2d", recess_rates)#
-recess_3d_apr_may <- r.prob(apr_may, "recess_3d", recess_rates)#
-recess_4d_apr_may <- r.prob(apr_may, "recess_4d", recess_rates)#
-recess_5d_apr_may <- r.prob(apr_may, "recess_5d", recess_rates)#
-recess_6d_apr_may <- r.prob(apr_may, "recess_6d", recess_rates)#
-recess_7d_apr_may <- r.prob(apr_may, "recess_7d", recess_rates)#
-recess_14d_apr_may <- r.prob(apr_may, "recess_14d", recess_rates)#
-recess_30d_apr_may <- r.prob(apr_may, "recess_30d", recess_rates)#
-recess_45d_apr_may <- r.prob(apr_may, "recess_45d", recess_rates)#
-#
-recess_all_apr_may <- cbind(recess_1d_apr_may, recess_2d_apr_may, recess_3d_apr_may, recess_4d_apr_may, recess_5d_apr_may, recess_6d_apr_may, recess_7d_apr_may, recess_14d_apr_may, recess_30d_apr_may, recess_45d_apr_may)#
-colnames(recess_all_apr_may) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_apr_may) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_apr_may <- t(recess_all_apr_may)#
-#
-# Calculate recession rate probabilities for June-July#
-recess_1d_jun_jul <- r.prob(jun_jul, "recess_1d", recess_rates)#
-recess_2d_jun_jul <- r.prob(jun_jul, "recess_2d", recess_rates)#
-recess_3d_jun_jul <- r.prob(jun_jul, "recess_3d", recess_rates)#
-recess_4d_jun_jul <- r.prob(jun_jul, "recess_4d", recess_rates)#
-recess_5d_jun_jul <- r.prob(jun_jul, "recess_5d", recess_rates)#
-recess_6d_jun_jul <- r.prob(jun_jul, "recess_6d", recess_rates)#
-recess_7d_jun_jul <- r.prob(jun_jul, "recess_7d", recess_rates)#
-recess_14d_jun_jul <- r.prob(jun_jul, "recess_14d", recess_rates)#
-recess_30d_jun_jul <- r.prob(jun_jul, "recess_30d", recess_rates)#
-recess_45d_jun_jul <- r.prob(jun_jul, "recess_45d", recess_rates)#
-#
-recess_all_jun_jul <- cbind(recess_1d_jun_jul, recess_2d_jun_jul, recess_3d_jun_jul, recess_4d_jun_jul, recess_5d_jun_jul, recess_6d_jun_jul, recess_7d_jun_jul, recess_14d_jun_jul, recess_30d_jun_jul, recess_45d_jun_jul)#
-colnames(recess_all_jun_jul) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_jun_jul) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_jun_jul <- t(recess_all_jun_jul)#
-#
-# Calculate recession rate probabilities for August-September#
-recess_1d_aug_sep <- r.prob(aug_sep, "recess_1d", recess_rates)#
-recess_2d_aug_sep <- r.prob(aug_sep, "recess_2d", recess_rates)#
-recess_3d_aug_sep <- r.prob(aug_sep, "recess_3d", recess_rates)#
-recess_4d_aug_sep <- r.prob(aug_sep, "recess_4d", recess_rates)#
-recess_5d_aug_sep <- r.prob(aug_sep, "recess_5d", recess_rates)#
-recess_6d_aug_sep <- r.prob(aug_sep, "recess_6d", recess_rates)#
-recess_7d_aug_sep <- r.prob(aug_sep, "recess_7d", recess_rates)#
-recess_14d_aug_sep <- r.prob(aug_sep, "recess_14d", recess_rates)#
-recess_30d_aug_sep <- r.prob(aug_sep, "recess_30d", recess_rates)#
-recess_45d_aug_sep <- r.prob(aug_sep, "recess_45d", recess_rates)#
-#
-recess_all_aug_sep <- cbind(recess_1d_aug_sep, recess_2d_aug_sep, recess_3d_aug_sep, recess_4d_aug_sep, recess_5d_aug_sep, recess_6d_aug_sep, recess_7d_aug_sep, recess_14d_aug_sep, recess_30d_aug_sep, recess_45d_aug_sep)#
-colnames(recess_all_aug_sep) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_aug_sep) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_aug_sep <- t(recess_all_aug_sep)#
-#
-recess_prob_all <- cbind(recess_all_apr_may, recess_all_jun_jul, recess_all_aug_sep)#
-#
-#### Populate network states based on scenarios #####
-# Discrete states (1, 2, 3) based on the timing#
-timing_state <- timing.states(future_base)#
-#
-# Discrete states (Y, N) based on inundation#
-q1_state <- q.states(future_base, q_bin, 1)#
-q2_state <- q.states(future_base, q_bin, 2)#
-q3_state <- q.states(future_base, q_bin, 3)#
-q4_state <- q.states(future_base, q_bin, 4)#
-q5_state <- q.states(future_base, q_bin, 5)#
-q6_state <- q.states(future_base, q_bin, 6)#
-q7_state <- q.states(future_base, q_bin, 7)#
-#
-# Discrete states based on recession rates#
-recess_state <- recess.states(future_base, recess_rates, "recess_14d")
-rm(list=ls(all=TRUE))
-Hydrologic Data Processessing #####
-library(xts)#
-library(prob)#
-library(TTR)#
-library(bigmemory)#
-#
-#### Set working directory #####
-setwd("/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian")#
-#
-#### Source common functions #####
-source('~/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/1-functions.R')#
-#
-hist_base <- climate.hydrology("data/HAD_hist_base.csv")#
-#
-#### Add stage values (feet and cm) to data frame based on a regression equation #####
-# The regression equation was developed using historical gage data, and changes depending on the site location#
-#
-# sitenum <- site2#
-# if (sitenum==site1) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site2) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site3) head_conv <- function(Q) 0.056*(Q^0.5612)#
-# else if (sitenum==site4) head_conv <- function(Q) 0.0014*(Q^0.99)#
-# elseif (sitenum==site5) head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-# SITE 1#
-head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 2#
-# head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 3#
-# head_conv <- function(Q) 0.056*(Q^0.5612)#
-#
-# SITE 4#
-# head_conv <- function(Q) 0.0014*(Q^0.99)#
-#
-# SITE 5#
-# head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-hist_base_stage <- stage(hist_base, head_conv)#
-hist_base <- data.frame(hist_base, hist_base_stage)#
-#
-#### Calculate recession rates #####
-# The 1-, 2-, ... , 7-day, 14-day recession rates were computed#
-recess_1d <- recession.rate.forward(hist_base, 1)#
-recess_2d <- recession.rate.forward(hist_base, 2)#
-recess_3d <- recession.rate.forward(hist_base, 3)#
-recess_4d <- recession.rate.forward(hist_base, 4)#
-recess_5d <- recession.rate.forward(hist_base, 5)#
-recess_6d <- recession.rate.forward(hist_base, 6)#
-recess_7d <- recession.rate.forward(hist_base, 7)#
-recess_14d <- recession.rate.forward(hist_base, 14)#
-recess_30d <- recession.rate.forward(hist_base, 30)#
-recess_45d <- recession.rate.forward(hist_base, 45)#
-#
-hist_base <- cbind(hist_base, recess_1d, recess_2d, recess_3d, recess_4d, recess_5d, recess_6d, recess_7d, recess_14d, recess_30d, recess_45d)#
-colnames(hist_base)[5:14] <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-#
-#### Process Q-model bins #####
-# Model Q-bins were selected so that inundation areas increased by less than 15% between the discharge associated with each bin#
-# q_bin <- c(719, 1209, 2100, 4000, 6296, 11300)#
-# q_bin <- c(1000, 1200, 1400, 1600, 1800, 2000, 2200)#
-q_bin <- c(1000, 1500, 2000, 2500, 3000, 3500, 4000)#
-#
-# Calculate probability of flooding in each bin for the entire year#
-q_bin_prob <- q.prob(hist_base, q_bin)#
-#
-# Calculate probabilities in each bin according to discrete timing states#
-# The discrete timing states are April-May, June-July, August-September#
-hist_base_monthly <- subset.month(hist_base)#
-#
-apr_may <- list.to.df(hist_base_monthly[[1]])#
-jun_jul <- list.to.df(hist_base_monthly[[2]])#
-aug_sep <- list.to.df(hist_base_monthly[[3]])#
-#
-q_prob_apr_may <- q.prob(apr_may, q_bin)#
-q_prob_jun_jul <- q.prob(jun_jul, q_bin)#
-q_prob_aug_sep <- q.prob(aug_sep, q_bin)#
-#
-q_prob_all <- data.frame(q_prob_apr_may, q_prob_jun_jul, q_prob_aug_sep)#
-# write.table(q_prob_all, "output/q_prob_all.txt", sep="\t")#
-#
-# Test calculations#
-# R <- probspace(apr_may)#
-# Y <- prob(R, cfs>=719)#
-##
-# C <- count(apr_may$cfs>=719)#
-#
-#### Calculate probabilities for recession rates #####
-# Test calculations#
-# S <- probspace(apr_may)#
-# P <- prob(S, recess_6d>=6)#
-# X <- S[["recess_1d"]]#
-#
-# Set discrete states for recession rates (in cm/day)#
-recess_rates <- c(0, 1, 3, 6)#
-#
-# Calculate recession rate probabilities for April-May#
-recess_1d_apr_may <- r.prob(apr_may, "recess_1d", recess_rates)#
-recess_2d_apr_may <- r.prob(apr_may, "recess_2d", recess_rates)#
-recess_3d_apr_may <- r.prob(apr_may, "recess_3d", recess_rates)#
-recess_4d_apr_may <- r.prob(apr_may, "recess_4d", recess_rates)#
-recess_5d_apr_may <- r.prob(apr_may, "recess_5d", recess_rates)#
-recess_6d_apr_may <- r.prob(apr_may, "recess_6d", recess_rates)#
-recess_7d_apr_may <- r.prob(apr_may, "recess_7d", recess_rates)#
-recess_14d_apr_may <- r.prob(apr_may, "recess_14d", recess_rates)#
-recess_30d_apr_may <- r.prob(apr_may, "recess_30d", recess_rates)#
-recess_45d_apr_may <- r.prob(apr_may, "recess_45d", recess_rates)#
-#
-recess_all_apr_may <- cbind(recess_1d_apr_may, recess_2d_apr_may, recess_3d_apr_may, recess_4d_apr_may, recess_5d_apr_may, recess_6d_apr_may, recess_7d_apr_may, recess_14d_apr_may, recess_30d_apr_may, recess_45d_apr_may)#
-colnames(recess_all_apr_may) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_apr_may) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_apr_may <- t(recess_all_apr_may)#
-#
-# Calculate recession rate probabilities for June-July#
-recess_1d_jun_jul <- r.prob(jun_jul, "recess_1d", recess_rates)#
-recess_2d_jun_jul <- r.prob(jun_jul, "recess_2d", recess_rates)#
-recess_3d_jun_jul <- r.prob(jun_jul, "recess_3d", recess_rates)#
-recess_4d_jun_jul <- r.prob(jun_jul, "recess_4d", recess_rates)#
-recess_5d_jun_jul <- r.prob(jun_jul, "recess_5d", recess_rates)#
-recess_6d_jun_jul <- r.prob(jun_jul, "recess_6d", recess_rates)#
-recess_7d_jun_jul <- r.prob(jun_jul, "recess_7d", recess_rates)#
-recess_14d_jun_jul <- r.prob(jun_jul, "recess_14d", recess_rates)#
-recess_30d_jun_jul <- r.prob(jun_jul, "recess_30d", recess_rates)#
-recess_45d_jun_jul <- r.prob(jun_jul, "recess_45d", recess_rates)#
-#
-recess_all_jun_jul <- cbind(recess_1d_jun_jul, recess_2d_jun_jul, recess_3d_jun_jul, recess_4d_jun_jul, recess_5d_jun_jul, recess_6d_jun_jul, recess_7d_jun_jul, recess_14d_jun_jul, recess_30d_jun_jul, recess_45d_jun_jul)#
-colnames(recess_all_jun_jul) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_jun_jul) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_jun_jul <- t(recess_all_jun_jul)#
-#
-# Calculate recession rate probabilities for August-September#
-recess_1d_aug_sep <- r.prob(aug_sep, "recess_1d", recess_rates)#
-recess_2d_aug_sep <- r.prob(aug_sep, "recess_2d", recess_rates)#
-recess_3d_aug_sep <- r.prob(aug_sep, "recess_3d", recess_rates)#
-recess_4d_aug_sep <- r.prob(aug_sep, "recess_4d", recess_rates)#
-recess_5d_aug_sep <- r.prob(aug_sep, "recess_5d", recess_rates)#
-recess_6d_aug_sep <- r.prob(aug_sep, "recess_6d", recess_rates)#
-recess_7d_aug_sep <- r.prob(aug_sep, "recess_7d", recess_rates)#
-recess_14d_aug_sep <- r.prob(aug_sep, "recess_14d", recess_rates)#
-recess_30d_aug_sep <- r.prob(aug_sep, "recess_30d", recess_rates)#
-recess_45d_aug_sep <- r.prob(aug_sep, "recess_45d", recess_rates)#
-#
-recess_all_aug_sep <- cbind(recess_1d_aug_sep, recess_2d_aug_sep, recess_3d_aug_sep, recess_4d_aug_sep, recess_5d_aug_sep, recess_6d_aug_sep, recess_7d_aug_sep, recess_14d_aug_sep, recess_30d_aug_sep, recess_45d_aug_sep)#
-colnames(recess_all_aug_sep) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_aug_sep) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_aug_sep <- t(recess_all_aug_sep)#
-#
-recess_prob_all <- cbind(recess_all_apr_may, recess_all_jun_jul, recess_all_aug_sep)#
-#
-#### Populate network states based on scenarios #####
-# Discrete states (1, 2, 3) based on the timing#
-timing_state <- timing.states(hist_base)#
-#
-# Discrete states (Y, N) based on inundation#
-q1_state <- q.states(hist_base, q_bin, 1)#
-q2_state <- q.states(hist_base, q_bin, 2)#
-q3_state <- q.states(hist_base, q_bin, 3)#
-q4_state <- q.states(hist_base, q_bin, 4)#
-q5_state <- q.states(hist_base, q_bin, 5)#
-q6_state <- q.states(hist_base, q_bin, 6)#
-q7_state <- q.states(hist_base, q_bin, 7)#
-#
-# Discrete states based on recession rates#
-recess_state <- recess.states(hist_base, recess_rates, "recess_14d")
-Hydrologic Data Processessing #####
-library(xts)#
-library(prob)#
-library(TTR)#
-library(bigmemory)#
-#
-#### Set working directory #####
-setwd("/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian")#
-#
-#### Source common functions #####
-source('~/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/1-functions.R')#
-#
-future_base <- climate.hydrology("data/HAD_future_base.csv")#
-#
-#### Add stage values (feet and cm) to data frame based on a regression equation #####
-# The regression equation was developed using historical gage data, and changes depending on the site location#
-#
-# sitenum <- site2#
-# if (sitenum==site1) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site2) head_conv <- function(Q) 0.0011*Q#
-# else if (sitenum==site3) head_conv <- function(Q) 0.056*(Q^0.5612)#
-# else if (sitenum==site4) head_conv <- function(Q) 0.0014*(Q^0.99)#
-# elseif (sitenum==site5) head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-# SITE 1#
-head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 2#
-# head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 3#
-# head_conv <- function(Q) 0.056*(Q^0.5612)#
-#
-# SITE 4#
-# head_conv <- function(Q) 0.0014*(Q^0.99)#
-#
-# SITE 5#
-# head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-future_base_stage <- stage(future_base, head_conv)#
-future_base <- data.frame(future_base, future_base_stage)#
-#
-#### Calculate recession rates #####
-# The 1-, 2-, ... , 7-day, 14-day recession rates were computed#
-recess_1d <- recession.rate.forward(future_base, 1)#
-recess_2d <- recession.rate.forward(future_base, 2)#
-recess_3d <- recession.rate.forward(future_base, 3)#
-recess_4d <- recession.rate.forward(future_base, 4)#
-recess_5d <- recession.rate.forward(future_base, 5)#
-recess_6d <- recession.rate.forward(future_base, 6)#
-recess_7d <- recession.rate.forward(future_base, 7)#
-recess_14d <- recession.rate.forward(future_base, 14)#
-recess_30d <- recession.rate.forward(future_base, 30)#
-recess_45d <- recession.rate.forward(future_base, 45)#
-#
-future_base <- cbind(future_base, recess_1d, recess_2d, recess_3d, recess_4d, recess_5d, recess_6d, recess_7d, recess_14d, recess_30d, recess_45d)#
-colnames(future_base)[5:14] <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-#
-#### Process Q-model bins #####
-# Model Q-bins were selected so that inundation areas increased by less than 15% between the discharge associated with each bin#
-# q_bin <- c(719, 1209, 2100, 4000, 6296, 11300)#
-# q_bin <- c(1000, 1200, 1400, 1600, 1800, 2000, 2200)#
-q_bin <- c(1000, 1500, 2000, 2500, 3000, 3500, 4000)#
-#
-# Calculate probability of flooding in each bin for the entire year#
-q_bin_prob <- q.prob(future_base, q_bin)#
-#
-# Calculate probabilities in each bin according to discrete timing states#
-# The discrete timing states are April-May, June-July, August-September#
-future_base_monthly <- subset.month(future_base)#
-#
-apr_may <- list.to.df(future_base_monthly[[1]])#
-jun_jul <- list.to.df(future_base_monthly[[2]])#
-aug_sep <- list.to.df(future_base_monthly[[3]])#
-#
-q_prob_apr_may <- q.prob(apr_may, q_bin)#
-q_prob_jun_jul <- q.prob(jun_jul, q_bin)#
-q_prob_aug_sep <- q.prob(aug_sep, q_bin)#
-#
-q_prob_all <- data.frame(q_prob_apr_may, q_prob_jun_jul, q_prob_aug_sep)#
-# write.table(q_prob_all, "output/q_prob_all.txt", sep="\t")#
-#
-# Test calculations#
-# R <- probspace(apr_may)#
-# Y <- prob(R, cfs>=719)#
-##
-# C <- count(apr_may$cfs>=719)#
-#
-#### Calculate probabilities for recession rates #####
-# Test calculations#
-# S <- probspace(apr_may)#
-# P <- prob(S, recess_6d>=6)#
-# X <- S[["recess_1d"]]#
-#
-# Set discrete states for recession rates (in cm/day)#
-recess_rates <- c(0, 1, 3, 6)#
-#
-# Calculate recession rate probabilities for April-May#
-recess_1d_apr_may <- r.prob(apr_may, "recess_1d", recess_rates)#
-recess_2d_apr_may <- r.prob(apr_may, "recess_2d", recess_rates)#
-recess_3d_apr_may <- r.prob(apr_may, "recess_3d", recess_rates)#
-recess_4d_apr_may <- r.prob(apr_may, "recess_4d", recess_rates)#
-recess_5d_apr_may <- r.prob(apr_may, "recess_5d", recess_rates)#
-recess_6d_apr_may <- r.prob(apr_may, "recess_6d", recess_rates)#
-recess_7d_apr_may <- r.prob(apr_may, "recess_7d", recess_rates)#
-recess_14d_apr_may <- r.prob(apr_may, "recess_14d", recess_rates)#
-recess_30d_apr_may <- r.prob(apr_may, "recess_30d", recess_rates)#
-recess_45d_apr_may <- r.prob(apr_may, "recess_45d", recess_rates)#
-#
-recess_all_apr_may <- cbind(recess_1d_apr_may, recess_2d_apr_may, recess_3d_apr_may, recess_4d_apr_may, recess_5d_apr_may, recess_6d_apr_may, recess_7d_apr_may, recess_14d_apr_may, recess_30d_apr_may, recess_45d_apr_may)#
-colnames(recess_all_apr_may) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_apr_may) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_apr_may <- t(recess_all_apr_may)#
-#
-# Calculate recession rate probabilities for June-July#
-recess_1d_jun_jul <- r.prob(jun_jul, "recess_1d", recess_rates)#
-recess_2d_jun_jul <- r.prob(jun_jul, "recess_2d", recess_rates)#
-recess_3d_jun_jul <- r.prob(jun_jul, "recess_3d", recess_rates)#
-recess_4d_jun_jul <- r.prob(jun_jul, "recess_4d", recess_rates)#
-recess_5d_jun_jul <- r.prob(jun_jul, "recess_5d", recess_rates)#
-recess_6d_jun_jul <- r.prob(jun_jul, "recess_6d", recess_rates)#
-recess_7d_jun_jul <- r.prob(jun_jul, "recess_7d", recess_rates)#
-recess_14d_jun_jul <- r.prob(jun_jul, "recess_14d", recess_rates)#
-recess_30d_jun_jul <- r.prob(jun_jul, "recess_30d", recess_rates)#
-recess_45d_jun_jul <- r.prob(jun_jul, "recess_45d", recess_rates)#
-#
-recess_all_jun_jul <- cbind(recess_1d_jun_jul, recess_2d_jun_jul, recess_3d_jun_jul, recess_4d_jun_jul, recess_5d_jun_jul, recess_6d_jun_jul, recess_7d_jun_jul, recess_14d_jun_jul, recess_30d_jun_jul, recess_45d_jun_jul)#
-colnames(recess_all_jun_jul) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_jun_jul) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_jun_jul <- t(recess_all_jun_jul)#
-#
-# Calculate recession rate probabilities for August-September#
-recess_1d_aug_sep <- r.prob(aug_sep, "recess_1d", recess_rates)#
-recess_2d_aug_sep <- r.prob(aug_sep, "recess_2d", recess_rates)#
-recess_3d_aug_sep <- r.prob(aug_sep, "recess_3d", recess_rates)#
-recess_4d_aug_sep <- r.prob(aug_sep, "recess_4d", recess_rates)#
-recess_5d_aug_sep <- r.prob(aug_sep, "recess_5d", recess_rates)#
-recess_6d_aug_sep <- r.prob(aug_sep, "recess_6d", recess_rates)#
-recess_7d_aug_sep <- r.prob(aug_sep, "recess_7d", recess_rates)#
-recess_14d_aug_sep <- r.prob(aug_sep, "recess_14d", recess_rates)#
-recess_30d_aug_sep <- r.prob(aug_sep, "recess_30d", recess_rates)#
-recess_45d_aug_sep <- r.prob(aug_sep, "recess_45d", recess_rates)#
-#
-recess_all_aug_sep <- cbind(recess_1d_aug_sep, recess_2d_aug_sep, recess_3d_aug_sep, recess_4d_aug_sep, recess_5d_aug_sep, recess_6d_aug_sep, recess_7d_aug_sep, recess_14d_aug_sep, recess_30d_aug_sep, recess_45d_aug_sep)#
-colnames(recess_all_aug_sep) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_aug_sep) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_aug_sep <- t(recess_all_aug_sep)#
-#
-recess_prob_all <- cbind(recess_all_apr_may, recess_all_jun_jul, recess_all_aug_sep)#
-#
-#### Populate network states based on scenarios #####
-# Discrete states (1, 2, 3) based on the timing#
-timing_state <- timing.states(future_base)#
-#
-# Discrete states (Y, N) based on inundation#
-q1_state <- q.states(future_base, q_bin, 1)#
-q2_state <- q.states(future_base, q_bin, 2)#
-q3_state <- q.states(future_base, q_bin, 3)#
-q4_state <- q.states(future_base, q_bin, 4)#
-q5_state <- q.states(future_base, q_bin, 5)#
-q6_state <- q.states(future_base, q_bin, 6)#
-q7_state <- q.states(future_base, q_bin, 7)#
-#
-# Discrete states based on recession rates#
-recess_state <- recess.states(future_base, recess_rates, "recess_14d")
-rm(list=ls(all=TRUE))
-Hydrologic Data Processessing #####
-library(xts)#
-library(prob)#
-library(TTR)#
-library(bigmemory)#
-#
-#### Set working directory #####
-setwd("/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian")#
-#
-#### Source common functions #####
-source('~/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/1-functions.R')#
-#
-hist_base <- climate.hydrology("data/HAD_hist_base.csv")#
-#
-#### Add stage values (feet and cm) to data frame based on a regression equation #####
-# The regression equation was developed using historical gage data, and changes depending on the site location#
-#
-# SITE 1#
-head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 2#
-# head_conv <- function(Q) 0.0011*Q#
-#
-# SITE 3#
-# head_conv <- function(Q) 0.056*(Q^0.5612)#
-#
-# SITE 4#
-# head_conv <- function(Q) 0.0014*(Q^0.99)#
-#
-# SITE 5#
-# head_conv <- function(Q) 0.1123*(Q^0.4963)#
-#
-hist_base_stage <- stage(hist_base, head_conv)#
-hist_base <- data.frame(hist_base, hist_base_stage)#
-#
-#### Calculate recession rates #####
-# The 1-, 2-, ... , 7-day, 14-day recession rates were computed#
-recess_1d <- recession.rate.forward(hist_base, 1)#
-recess_2d <- recession.rate.forward(hist_base, 2)#
-recess_3d <- recession.rate.forward(hist_base, 3)#
-recess_4d <- recession.rate.forward(hist_base, 4)#
-recess_5d <- recession.rate.forward(hist_base, 5)#
-recess_6d <- recession.rate.forward(hist_base, 6)#
-recess_7d <- recession.rate.forward(hist_base, 7)#
-recess_14d <- recession.rate.forward(hist_base, 14)#
-recess_30d <- recession.rate.forward(hist_base, 30)#
-recess_45d <- recession.rate.forward(hist_base, 45)#
-#
-hist_base <- cbind(hist_base, recess_1d, recess_2d, recess_3d, recess_4d, recess_5d, recess_6d, recess_7d, recess_14d, recess_30d, recess_45d)#
-colnames(hist_base)[5:14] <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-#
-#### Process Q-model bins #####
-# Model Q-bins were selected so that inundation areas increased by less than 15% between the discharge associated with each bin#
-# q_bin <- c(719, 1209, 2100, 4000, 6296, 11300)#
-# q_bin <- c(1000, 1200, 1400, 1600, 1800, 2000, 2200)#
-q_bin <- c(1000, 1500, 2000, 2500, 3000, 3500, 4000)#
-#
-# Calculate probability of flooding in each bin for the entire year#
-q_bin_prob <- q.prob(hist_base, q_bin)#
-#
-# Calculate probabilities in each bin according to discrete timing states#
-# The discrete timing states are April-May, June-July, August-September#
-hist_base_monthly <- subset.month(hist_base)#
-#
-apr_may <- list.to.df(hist_base_monthly[[1]])#
-jun_jul <- list.to.df(hist_base_monthly[[2]])#
-aug_sep <- list.to.df(hist_base_monthly[[3]])#
-#
-q_prob_apr_may <- q.prob(apr_may, q_bin)#
-q_prob_jun_jul <- q.prob(jun_jul, q_bin)#
-q_prob_aug_sep <- q.prob(aug_sep, q_bin)#
-#
-HB_q_prob_all <- data.frame(q_prob_apr_may, q_prob_jun_jul, q_prob_aug_sep)#
-# write.table(q_prob_all, "output/q_prob_all.txt", sep="\t")#
-#
-# Test calculations#
-# R <- probspace(apr_may)#
-# Y <- prob(R, cfs>=719)#
-##
-# C <- count(apr_may$cfs>=719)#
-#
-#### Calculate probabilities for recession rates #####
-# Test calculations#
-# S <- probspace(apr_may)#
-# P <- prob(S, recess_6d>=6)#
-# X <- S[["recess_1d"]]#
-#
-# Set discrete states for recession rates (in cm/day)#
-recess_rates <- c(0, 1, 3, 6)#
-#
-# Calculate recession rate probabilities for April-May#
-recess_1d_apr_may <- r.prob(apr_may, "recess_1d", recess_rates)#
-recess_2d_apr_may <- r.prob(apr_may, "recess_2d", recess_rates)#
-recess_3d_apr_may <- r.prob(apr_may, "recess_3d", recess_rates)#
-recess_4d_apr_may <- r.prob(apr_may, "recess_4d", recess_rates)#
-recess_5d_apr_may <- r.prob(apr_may, "recess_5d", recess_rates)#
-recess_6d_apr_may <- r.prob(apr_may, "recess_6d", recess_rates)#
-recess_7d_apr_may <- r.prob(apr_may, "recess_7d", recess_rates)#
-recess_14d_apr_may <- r.prob(apr_may, "recess_14d", recess_rates)#
-recess_30d_apr_may <- r.prob(apr_may, "recess_30d", recess_rates)#
-recess_45d_apr_may <- r.prob(apr_may, "recess_45d", recess_rates)#
-#
-recess_all_apr_may <- cbind(recess_1d_apr_may, recess_2d_apr_may, recess_3d_apr_may, recess_4d_apr_may, recess_5d_apr_may, recess_6d_apr_may, recess_7d_apr_may, recess_14d_apr_may, recess_30d_apr_may, recess_45d_apr_may)#
-colnames(recess_all_apr_may) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_apr_may) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_apr_may <- t(recess_all_apr_may)#
-#
-# Calculate recession rate probabilities for June-July#
-recess_1d_jun_jul <- r.prob(jun_jul, "recess_1d", recess_rates)#
-recess_2d_jun_jul <- r.prob(jun_jul, "recess_2d", recess_rates)#
-recess_3d_jun_jul <- r.prob(jun_jul, "recess_3d", recess_rates)#
-recess_4d_jun_jul <- r.prob(jun_jul, "recess_4d", recess_rates)#
-recess_5d_jun_jul <- r.prob(jun_jul, "recess_5d", recess_rates)#
-recess_6d_jun_jul <- r.prob(jun_jul, "recess_6d", recess_rates)#
-recess_7d_jun_jul <- r.prob(jun_jul, "recess_7d", recess_rates)#
-recess_14d_jun_jul <- r.prob(jun_jul, "recess_14d", recess_rates)#
-recess_30d_jun_jul <- r.prob(jun_jul, "recess_30d", recess_rates)#
-recess_45d_jun_jul <- r.prob(jun_jul, "recess_45d", recess_rates)#
-#
-recess_all_jun_jul <- cbind(recess_1d_jun_jul, recess_2d_jun_jul, recess_3d_jun_jul, recess_4d_jun_jul, recess_5d_jun_jul, recess_6d_jun_jul, recess_7d_jun_jul, recess_14d_jun_jul, recess_30d_jun_jul, recess_45d_jun_jul)#
-colnames(recess_all_jun_jul) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_jun_jul) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_jun_jul <- t(recess_all_jun_jul)#
-#
-# Calculate recession rate probabilities for August-September#
-recess_1d_aug_sep <- r.prob(aug_sep, "recess_1d", recess_rates)#
-recess_2d_aug_sep <- r.prob(aug_sep, "recess_2d", recess_rates)#
-recess_3d_aug_sep <- r.prob(aug_sep, "recess_3d", recess_rates)#
-recess_4d_aug_sep <- r.prob(aug_sep, "recess_4d", recess_rates)#
-recess_5d_aug_sep <- r.prob(aug_sep, "recess_5d", recess_rates)#
-recess_6d_aug_sep <- r.prob(aug_sep, "recess_6d", recess_rates)#
-recess_7d_aug_sep <- r.prob(aug_sep, "recess_7d", recess_rates)#
-recess_14d_aug_sep <- r.prob(aug_sep, "recess_14d", recess_rates)#
-recess_30d_aug_sep <- r.prob(aug_sep, "recess_30d", recess_rates)#
-recess_45d_aug_sep <- r.prob(aug_sep, "recess_45d", recess_rates)#
-#
-recess_all_aug_sep <- cbind(recess_1d_aug_sep, recess_2d_aug_sep, recess_3d_aug_sep, recess_4d_aug_sep, recess_5d_aug_sep, recess_6d_aug_sep, recess_7d_aug_sep, recess_14d_aug_sep, recess_30d_aug_sep, recess_45d_aug_sep)#
-colnames(recess_all_aug_sep) <- c("recess_1d", "recess_2d", "recess_3d", "recess_4d", "recess_5d", "recess_6d", "recess_7d", "recess_14d", "recess_30d", "recess_45d")#
-rownames(recess_all_aug_sep) <- c("<0", "0-1", "1-3", "3-6", ">6")#
-recess_all_aug_sep <- t(recess_all_aug_sep)#
-#
-HB_recess_prob_all <- cbind(recess_all_apr_may, recess_all_jun_jul, recess_all_aug_sep)#
-#
-#### Populate network states based on scenarios #####
-# Discrete states (1, 2, 3) based on the timing#
-HB_timing_state <- timing.states(hist_base)#
-#
-# Discrete states (Y, N) based on inundation#
-HB_q1_state <- q.states(hist_base, q_bin, 1)#
-HB_q2_state <- q.states(hist_base, q_bin, 2)#
-HB_q3_state <- q.states(hist_base, q_bin, 3)#
-HB_q4_state <- q.states(hist_base, q_bin, 4)#
-HB_q5_state <- q.states(hist_base, q_bin, 5)#
-HB_q6_state <- q.states(hist_base, q_bin, 6)#
-HB_q7_state <- q.states(hist_base, q_bin, 7)#
-#
-# Discrete states based on recession rates#
-HB_recess_state <- recess.states(hist_base, recess_rates, "recess_14d")
+dim_TIMING <- c("March-May", "May-July", "July-Sept")
+dim_FLOOD <- c("Yes", "No")
+dim_RECESSION <- c("<1cm/s", "1-3 cm/s", ">3 cm/s")
+dim_DURATION <- c("<24 hrs", ">24 hrs")
+dim_HYDRO_COND <- c("Low", "Medium", "High")
+cpt_TIMING <- matrix(c(0.0, 0.0, 1), ncol=3, dimnames=list(NULL, "TIMING"=dim_TIMING))
+cpt_FLOOD <- matrix(c(0.5, 0.5, 0.75, 0.25, 0.3, 0.7), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
+cpt_RECESSION <- matrix(c(0.2, 0.5, 0.3, 1, 0, 0), ncol=2, dimnames=list("RECESSION"=dim_RECESSION, "FLOOD"=dim_FLOOD))
+cpt_DURATION <- matrix(c(0.2, 0.8, 1, 0), ncol=2, dimnames=list("DURATION"=dim_DURATION, "FLOOD"=dim_FLOOD))
+cpt_HYDRO_COND <- c(0.3, 0.3, 0.7, 0.4, 0.5, 0.9, 0.5, 0.3, 0.2, 0.5, 0.2, 0.05, 0.2, 0.4, 0.1, 0.1, 0.3, 0.05)
+cpt_HYDRO_COND <- c(0.3, 0.5, 0.2, 0.3, 0.3, 0.4, 0.7, 0.2, 0.1, 0.4, 0.5, 0.1, 0.5, 0.2, 0.3, 0.9, 0.05, 0.05)
+dim(cpt_HYDRO_COND) <- c(3, 3, 2)
+dimnames(cpt_HYDRO_COND) <- list("HYDRO_COND"=dim_HYDRO_COND, "RECESSION"=dim_RECESSION, "DURATION"=dim_DURATION)
+hydro.fit <- custom.fit(hydro, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD, RECESSION=cpt_RECESSION, DURATION=cpt_DURATION, HYDRO_COND=cpt_HYDRO_COND))
+str(hydro)
+head(hydro)
+hydro$arcs
+cpquery(hydro.fit, (FLOOD=="Yes"), TRUE)
+cpt_FLOOD
+cpquery(hydro.fit, (TIMING=="March-May"), TRUE)
+cpt_TIMING
+cpquery(hydro.fit, (TIMING=="July-Sept"), TRUE)
+cpt_TIMING
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="March-May"& FLOOD=="Yes" & RECESSION=="1-3 cm/s" & DURATION=="<24 hrs")
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="March-May"& FLOOD=="Yes" & RECESSION=="1-3 cm/s" & DURATION=="<24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="July-Sept"& FLOOD=="Yes" & RECESSION=="1-3 cm/s" & DURATION=="<24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="July-Sept"& FLOOD=="No" & RECESSION=="1-3 cm/s" & DURATION=="<24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="July-Sept"& FLOOD=="Yes" & RECESSION==">3 cm/s" & DURATION=="<24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="July-Sept"& FLOOD=="Yes" & RECESSION=="<1 cm/s" & DURATION=="<24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="July-Sept"& FLOOD=="Yes" & RECESSION==">3 cm/s" & DURATION=="<24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="July-Sept"& FLOOD=="Yes" & RECESSION==">3 cm/s" & DURATION==">24 hrs"))
+cpt_TIMING <- matrix(c(1, 0.0, 0), ncol=3, dimnames=list(NULL, "TIMING"=dim_TIMING))
+cpt_FLOOD <- matrix(c(0.5, 0.5, 0.75, 0.25, 0.3, 0.7), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))
+cpt_RECESSION <- matrix(c(0.2, 0.5, 0.3, 1, 0, 0), ncol=2, dimnames=list("RECESSION"=dim_RECESSION, "FLOOD"=dim_FLOOD))
+cpt_DURATION <- matrix(c(0.2, 0.8, 1, 0), ncol=2, dimnames=list("DURATION"=dim_DURATION, "FLOOD"=dim_FLOOD))
+cpt_HYDRO_COND <- c(0.3, 0.3, 0.7, 0.4, 0.5, 0.9, 0.5, 0.3, 0.2, 0.5, 0.2, 0.05, 0.2, 0.4, 0.1, 0.1, 0.3, 0.05)
+cpt_HYDRO_COND <- c(0.3, 0.5, 0.2, 0.3, 0.3, 0.4, 0.7, 0.2, 0.1, 0.4, 0.5, 0.1, 0.5, 0.2, 0.3, 0.9, 0.05, 0.05)
+dim(cpt_HYDRO_COND) <- c(3, 3, 2)
+dimnames(cpt_HYDRO_COND) <- list("HYDRO_COND"=dim_HYDRO_COND, "RECESSION"=dim_RECESSION, "DURATION"=dim_DURATION)
+hydro.fit <- custom.fit(hydro, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD, RECESSION=cpt_RECESSION, DURATION=cpt_DURATION, HYDRO_COND=cpt_HYDRO_COND))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="July-Sept" & FLOOD=="Yes" & RECESSION==">3 cm/s" & DURATION==">24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="March-May" & FLOOD=="Yes" & RECESSION==">3 cm/s" & DURATION==">24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="March-May" & FLOOD=="Yes" & RECESSION=="1-3 cm/s" & DURATION==">24 hrs"))
+cpquery(hydro.fit, (HYDRO_COND=="High"), (TIMING=="March-May" & FLOOD=="Yes" & RECESSION=="1-3 cm/s" & DURATION=="<24 hrs"))
+?random
+x <- runif(10, 5.0, 7.5)
+x
+set.seed(10)
+x <- runif(10, 5.0, 7.5)
+x
+x <- runif(10, 5.0, 7.5)
+x
 Load packages #####
 # Load "bnlearn" package#
 library(bnlearn)#
 #
 # Name network variables#
-riparian_var <- c("TIMING", "FLOOD", "RECESSION", "HYDRO", "DEPTH", "POTENTIAL")#
+cancer_var <- c("Pollution", "Smoker", "Cancer", "Xray", "Dyspnoea")#
 #
 # Create empty network#
-riparian_dag <- empty.graph(riparian_var)#
+cancer_dag <- empty.graph(cancer_var)#
 #
 # riparian_test <- model2network("[TIMING][DEPTH][FLOOD|TIMING][RECESSION|TIMING][HYDRO|FLOOD:RECESSION][POTENTIAL|HYDRO:DEPTH]")#
 #
 # Connect variables with directed arcs#
-arcs(riparian_dag) <- matrix(#
-	c("TIMING", "FLOOD", "TIMING", "RECESSION", "RECESSION", "HYDRO", "FLOOD", "HYDRO", "DEPTH", "POTENTIAL", "HYDRO", "POTENTIAL"),#
+arcs(cancer_dag) <- matrix(#
+	c("Pollution", "Cancer", "Smoker", "Cancer", "Cancer", "Xray", "Cancer", "Dyspnoea"),#
 	ncol = 2, byrow = TRUE,#
 	dimnames = list(c(), c("from", "to")))#
 #
 #### Discrete States #####
 # Set discrete states for each node#
 #
-# Key to timing statess: 1 = May-June; 2 = July-August, 3 = September-October#
-dim_TIMING <- c(1, 2, 3)#
-# Key to flooding states: Y = yes; N = no#
-# dim_FLOOD <- c("Y", "N")#
-dim_FLOOD <- c(1, 0)#
-# dim_FLOOD <- c("TRUE", "FALSE") # USE FOR WINDOWS#
-# Key to recession states: 1 = < 0cm/day 2 = 0-1 cm/day; 3 = 1-3 cm/day; 4 = 3-6 cm/day, 5 = > 6 cm/day#
-dim_RECESSION <- c(1, 2, 3, 4, 5)#
-# Key to hydrologic condition states: L=low; M=medium; H=high#
-# dim_HYDRO <- c("L", "M", "H")#
-dim_HYDRO <- c("L", "H")#
-# Key to groundwater depth states: 1 = < 50 cm; 2 = 50-200 cm; 3 = > 200 cm#
-dim_DEPTH <- c(1, 2, 3)#
-# Key to recruitment potential states: L=low; M=medium; H=high#
-# dim_POTENTIAL <- c("L", "M", "H")#
-dim_POTENTIAL <- c("Y", "N")#
+dim_Pollution <- c("L", "H")#
+dim_Smoker <- c("T", "F")#
+dim_Cancer <- c("T", "F")#
+dim_Xray <- c("Pos", "Neg")#
+dim_Dyspnoea <- c("T", "F")#
 #### CPT Assignments #####
-cpt_TIMING <- matrix(c(0.65, 0.25, 0.1), ncol=3, dimnames=list(NULL, "TIMING"=dim_TIMING))#
-cpt_FLOOD1 <- matrix(as.matrix(HB_q_prob_all[2, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))#
-cpt_FLOOD2 <- matrix(as.matrix(HB_q_prob_all[3, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))#
-cpt_FLOOD3 <- matrix(as.matrix(HB_q_prob_all[4, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))#
-cpt_FLOOD4 <- matrix(as.matrix(HB_q_prob_all[5, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))#
-cpt_FLOOD5 <- matrix(as.matrix(HB_q_prob_all[6, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))#
-cpt_FLOOD6 <- matrix(as.matrix(HB_q_prob_all[7, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))#
-cpt_FLOOD7 <- matrix(as.matrix(HB_q_prob_all[8, ]), ncol=3, dimnames=list("FLOOD"=dim_FLOOD, "TIMING"=dim_TIMING))#
-cpt_RECESSION <- matrix(HB_recess_prob_all[8, ], ncol=3, dimnames=list("RECESSION"=dim_RECESSION, "TIMING"=dim_TIMING)) # Row 8 refers to the 14-day avg forward recession rate#
-cpt_RECESSION <- cpt.roundoff(cpt_RECESSION)#
-cpt_HYDRO <- matrix(c(1, 0, 1, 0, 0.05, 0.95, 1, 0, 0.1, 0.9, 1, 0, 0.3, 0.7, 1, 0, 0.9, 0.1, 1, 0))#
-dim(cpt_HYDRO) <- c(2, 2, 5)#
-dimnames(cpt_HYDRO) <- list("HYDRO"=dim_HYDRO, "FLOOD"=dim_FLOOD, "RECESSION"=dim_RECESSION)#
-cpt_DEPTH <- matrix(c(0.33, 0.33, 0.34), ncol=3, dimnames=list(NULL, "DEPTH"=dim_DEPTH))#
-# cpt_POTENTIAL <- matrix(c(0.3, 0.7, 0.4, 0.6, 0.5, 0.5, 0.5, 0.5, 0.6, 0.4, 0.7, 0.3, 0.3,0.7, 0.4, 0.6, 0.5, 0.5), ncol=3)#
-# cpt_POTENTIAL <- matrix(c(0, 1, 0.4, 0.6, 0.5, 0.5, 0.5, 0.5, 0.6, 0.4, 0.7, 0.3, 0, 1, 0.4, 0.6, 0.5, 0.5), ncol=3)#
-cpt_POTENTIAL <- matrix(c(0, 1, 0.7, 0.3, 0, 1, 0.9, 0.1, 0, 1, 0.7, 0.3), ncol=3)#
-dim(cpt_POTENTIAL) <- c(2, 2, 3)#
-dimnames(cpt_POTENTIAL) <- list("POTENTIAL"=dim_POTENTIAL, "HYDRO"=dim_HYDRO, "DEPTH"=dim_DEPTH)#
-# cpt_POTENTIAL <- matrix(c(0.8, 0.1, 0.1, 0.3, 0.5, 0.2, 0.1, 0.3, 0.6, 0.75, 0.15, 0.1, 0.2, 0.4, 0.4, 0.05, 0.2, 0.75, 0.9, 0.05, 0.05, 0.3, 0.5, 0.2, 0.2, 0.4, 0.4))#
-# dim(cpt_POTENTIAL) <- c(3, 3, 3)#
-# dimnames(cpt_POTENTIAL) <- list("POTENTIAL"=dim_POTENTIAL, "HYDRO"=dim_HYDRO, "DEPTH"=dim_DEPTH)#
+cpt_Pollution <- matrix(c(0.9, 0.1), ncol=2, dimnames=list(NULL, "Pollution"=dim_Pollution))#
+cpt_Smoker <- matrix(c(0.3, 0.7), ncol=2, dimnames=list(NULL, "Smoker"=dim_Smoker))#
+cpt_Cancer <- matrix(c(0.03, 0.97, 0.001, 0.999, 0.05, 0.95, 0.02, 0.98))#
+dim(cpt_Cancer) <- c(2, 2, 2)#
+dimnames(cpt_Cancer) <- list("Cancer"=dim_Cancer, "Smoker"=dim_Smoker, "Pollution"=dim_Pollution)#
+cpt_Xray <- matrix(c(0.9, 0.1, 0.2, 0.8), ncol=2, dimnames=list("Xray"=dim_Xray,"Cancer"=dim_Cancer))#
+cpt_Dyspnoea <- matrix(c(0.65, 0.35, 0.3, 0.7), ncol=2, dimnames=list("Dyspnoea"=dim_Dyspnoea, "Cancer"=dim_Cancer))#
 #
-riparian.fit1 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD1, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))#
-riparian.fit2 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD2, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))#
-riparian.fit3 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD3, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))#
-riparian.fit4 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD4, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))#
-riparian.fit5 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD5, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))#
-riparian.fit6 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD6, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))#
-riparian.fit7 <- custom.fit(riparian_dag, dist=list(TIMING=cpt_TIMING, FLOOD=cpt_FLOOD7, RECESSION=cpt_RECESSION, HYDRO=cpt_HYDRO, DEPTH=cpt_DEPTH, POTENTIAL=cpt_POTENTIAL))
-cpt_RECESSION
-cpt_FLOOD
-cpt_FLOOD1
-set.seed(140)
-HB_alldata <- read.table("data/site1_1000_to_4000.txt", header=FALSE, skip=0)
-colnames(HB_alldata) <- c("cell", "flood_cfs")
-Separate grid data according to the Q-bins previously defined
-HB_q1_cells <- subset(HB_alldata, flood_cfs>q_bin[1] & flood_cfs<q_bin[2])
-HB_q2_cells <- subset(HB_alldata, flood_cfs>=q_bin[2] & flood_cfs<q_bin[3])
-HB_q3_cells <- subset(HB_alldata, flood_cfs>=q_bin[3] & flood_cfs<q_bin[4])
-HB_q4_cells <- subset(HB_alldata, flood_cfs>=q_bin[4] & flood_cfs<q_bin[5])
-HB_q5_cells <- subset(HB_alldata, flood_cfs>=q_bin[5] & flood_cfs<q_bin[6])
-HB_q6_cells <- subset(HB_alldata, flood_cfs>=q_bin[6] & flood_cfs<q_bin[7])
-HB_q7_cells <- subset(HB_alldata, flood_cfs>=q_bin[7])
-Combine hydrology time series, timing states, and recession rate states
-HB_states <- cbind(hist_base, timing_state, recess_state)
-HB_states <- cbind(hist_base, HB_timing_state, HB_recess_state)
-HB_states <- subset(HB_states, TIMING != "NA" & RECESSION != 1)
-HB_timing_subset <- HB_states[,15]
-HB_recess_subset <- HB_states[,16]
-save(HB_states, file="output/site1/HB_states.Rdata")
-options(bigmemory.allow.dimnames=TRUE)
-HB_emptymatrix1 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q1_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q1_cells[,1]))))
-HB_emptymatrix2 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q2_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q2_cells[,1]))))
-HB_emptymatrix3 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q3_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q3_cells[,1]))))
-HB_emptymatrix4 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q4_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q4_cells[,1]))))
-HB_emptymatrix5 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q5_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q5_cells[,1]))))
-HB_emptymatrix6 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q6_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q6_cells[,1]))))
-HB_emptymatrix7 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q7_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q6_cells[,1]))))
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))
-HB_emptymatrix1[,2] <- as.vector(as.matrix(HB_recess_subset))
-for (i in 1:nrow(HB_q1_cells)) {#
-    HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-}
-warnings()
-HB_emptymatrix1
-describe(HB_emptymatrix1)
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))
-describe(HB_emptymatrix)
-describe(HB_emptymatrix1)
-rm(HB_emptymatrix1)
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))
-HB_emptymatrix1 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q1_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q1_cells[,1]))))
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))
-describe(HB_emptymatrix1)
-str(HB_states)
-head(HB_states)
-str(HB_q1_cells)
-head(HB_q1_cells)
-head(HB_emptymatrix_1)
-HB_emptymatrix1 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q1_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q1_cells[,1]))))
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))
-HB_emptymatrix1[,2] <- as.vector(as.matrix(HB_recess_subset))
-head(HB_emptymatrix1)
-for (i in 1:nrow(HB_q1_cells)) {#
-    HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-}
-head(HB_emptymatrix1)
-warnings()
-nrow(HB_q1_cells)
-str(HB_emptymatrix1)
-head(HB_q1_cells[,2])
-head(HB_q1_cells)
-head(HB_states)
-HB_states[4,2]
-HB_states[3,2]
-HB_states[1,2]
-HB_states[0,2]
-HB_states[1,2]
-HB_states[1,2]
-rm(HB_emptymatrix1)
-HB_emptymatrix1 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q1_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q1_cells[,1]))))
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))
-HB_emptymatrix1[,2] <- as.vector(as.matrix(HB_recess_subset))
-for (i in 1:nrow(HB_q1_cells)) {#
-	if (i=1) HB_emptymatrix1[, i+2] <- FALSE#
-	else {#
-		HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-	}#
-}
-for (i in 1:nrow(HB_q1_cells)) {#
-	if (i==1) HB_emptymatrix1[, i+2] <- FALSE#
-	else {#
-		HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-	}#
-}
-warnings()
-str(HB_emptymatrix1)
-head(HB_q1_cells)
-str(HB_q1_cells)
-str(HB_states)
-head(HB_states)
-nrow(HB_states)
-nrow(HB_q1_cells)
-head(HB_q1_cells)
-test <- HB_q1_cells[1, 2] <= HB_states[, 2]
-test
-test2 <- HB_q1_cells[1, 2] > HB_states[-1, 2]
+cancer_fit <- custom.fit(cancer_dag, dist=list(Pollution=cpt_Pollution, Smoker=cpt_Smoker, Cancer=cpt_Cancer, Xray=cpt_Xray, Dyspnoea=cpt_Dyspnoea))#
+#
+bel <- cpquery(cancer_fit, (Cancer=="T"), TRUE)#
+min_bel <- cpquery(cancer_fit, Cancer=="T", Cancer=="F")#
+max_bel <- cpquery(cancer_fit, Cancer=="T", Cancer=="T")#
+#
+test1 <- cpquery(cancer_fit, Cancer=="T", Xray=="Neg")#
+test2 <- cpquery(cancer_fit, Cancer=="T", Xray=="Pos")#
+test3 <- cpquery(cancer_fit, Cancer=="F", Xray=="Pos")#
+test4 <- cpquery(cancer_fit, Cancer=="F", Xray=="Neg")#
+test5 <- -1*(test1*log(test1)+test2*log(test2))#
+test6 <- -1*(test3*log(test3)+test4*log(test4))#
+#
+what1 <- cpquery(cancer_fit, Cancer=="T", Smoker=="T")#
+what2 <- cpquery(cancer_fit, Cancer=="T", Smoker=="F")#
+what3 <- cpquery(cancer_fit, Cancer=="F", Smoker=="T")#
+what4 <- cpquery(cancer_fit, Cancer=="F", Smoker=="F")#
+what5 <- -1*(what1*log(what1)+what2*log(what2))#
+what6 <- -1*(what3*log(what3)+what4*log(what4))#
+what7 <- what1*log(what1)+what3*log(what3)#
+what8 <- what2*log(what2)+what4*log(what4)#
+what7-what8#
+what6-what5#
+#
+log(2)#
+0.001*log(0.001)+0.050*log(0.050)+0.95*log(0.95)+0.999*log(0.999)
+bel
+test1 <- cpquery(cancer_fit, Cancer=="T", Xray=="Neg")
+test1
 test2
-test1 & test2
-test & test2
-nrow(test)
-length(test)
-length(test2)
-HB_emptymatrix1 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q1_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q1_cells[,1]))))#
+test3
+test4
+cpquery(cancer_fit, (Xray=="Pos"), TRUE)
+cpquery(cancer_fit, (Xray=="Neg"), TRUE)
+cpquery(cancer_fit, Cancer=="T", Xray=="Neg")
+cpquery(cancer_fit, Cancer=="T", Xray=="Pos")
+cpquery(cancer_fit, Cancer=="F", Xray=="Pos")
+cpquery(cancer_fit, Cancer=="F", Xray=="Neg")
+log2(0.00167)
+0.00167*log2(0.00167)
+0.999*log2(0.999)
+0.05*log2(0.05)
+0.947*log2(0.947)
+-0.789*(-0.0154-0.00144)
+0.210(-0.216-0.074)
+0.210*(-0.216-0.074)
+0.0133-0.0609
+0.0938-0.0476
+prior_bel1 <- bel <- cpquery(cancer_fit, (Cancer=="T"), TRUE)
+prior_bel1 <- cpquery(cancer_fit, (Cancer=="T"), TRUE)
+prior_bel2 <- cpquery(cancer_fit, (Cancer=="F"), TRUE)
+prior_ent <- -1*prior_bel1*log2(prior_bel1)+prior_bel2*log2(prior_bel2)
+prior_ent
+prior_ent <- -1(*prior_bel1*log2(prior_bel1)+prior_bel2*log2(prior_bel2))
+prior_ent <- -1*(prior_bel1*log2(prior_bel1)+prior_bel2*log2(prior_bel2))
+prior_ent
+post_bel1 <- cpquery(cancer_fit, Xray=="Pos", TRUE)
+post_bel2 <- cpquery(cancer_fit, Xray=="Pos", TRUE)
+post_bel2 <- cpquery(cancer_fit, Xray=="Neg", TRUE)
+post_bel1
+post_bel2
+post_bel11 <- cpquery(cancer_fit, Cancer=="T", Xray=="Pos")
+post_bel12 <- cpquery(cancer_fit, Cancer=="T", Xray=="Neg")
+post_bel21 <- cpquery(cancer_fit, Cancer=="F", Xray=="Pos")
+post_bel22 <- cpquery(cancer_fit, Cancer=="F", Xray=="Neg")
+prob_xray <- c(post_bel1, post_bel2)
+prob_xray
+class(prob_xray)
+str(prob_xray)
+prob_cond <- matrix(c(post_bel11, post_bel12, post_bel21, post_bel22), nrow=2)
+prob_cond
+post_bel11
+post_bel12
+prob_cond <- matrix(c(post_bel11, post_bel21, post_bel12, post_bel22), nrow=2)
+prob_cond
+prob_xray[1]
+prob_cond[1]
+prob_cond[1,]
+prob_xray[1] * prob_cond[1,]
+prob_cond_log <- log2(prob_cond)
+prob_cond_log
+prob_cond_prod <- prob_cond * prob_cond_log
+prob_cond_prod
+prob_xray[1] * prob_cond_prod[1,]
+prob_xray[1] * sum(prob_cond_prod[1,])
+prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,])
+-1*prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,])
+-1*[prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,])]
+-1*(prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,]))
+post_ent <- -1*(prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,]))
+prior_ent - post_ent
+post_ent <- (prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,]))
+prior_ent - post_ent
+prior_ent
+prior_ent + post_ent
+post_ent <- -1*(prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,]))
+prior_ent - post_ent
+str(cancer-fit)
+str(cancer_fit)
+(prior_ent - post_ent)/prior_ent*100
+post_bel1 <- cpquery(cancer_fit, Smoker=="T", TRUE)
+post_bel2 <- cpquery(cancer_fit, Smoker=="F", TRUE)
+prob_smoker <- c(post_bel1, post_bel2)
+post_bel11 <- cpquery(cancer_fit, Cancer=="T", Smoker=="T")
+post_bel12 <- cpquery(cancer_fit, Cancer=="T", Smoker=="F")
+post_bel21 <- cpquery(cancer_fit, Cancer=="F", Smoker=="T")
+post_bel22 <- cpquery(cancer_fit, Cancer=="F", Smoker=="F")
+prob_cond <- matrix(c(post_bel11, post_bel21, post_bel12, post_bel22), nrow=2)
+prob_cond_log <- log2(prob_cond)
+prob_cond_prod <- prob_cond * prob_cond_log
+post_ent <- -1*(prob_smoker[1] * sum(prob_cond_prod[1,]) + prob_smoker[2] * sum(prob_cond_prod[2,]))
+(prior_ent - post_ent)/prior_ent*100
+(prior_ent - post_ent)
+prob_smoker <- c(post_bel1, post_bel2)
+prob_smoker
+prob_cond
+prob_cond_log <- log2(prob_cond)
+prob_cond_prod <- prob_cond * prob_cond_log
+prob_cond_prod
+post_bel11
+prob_cond
+y <- c(0.108, 0.27, 0.453, 0.170)
+x_given_y <- matrix(c(0.284, 0.221, 0.355, 0.0114, 0.406, 0.232, 0.293, 0.0648), nrow=4)
+x_given_y
+x_given_y <- matrix(c(0.284, 0.221, 0.355, 0.0114, 0.406, 0.232, 0.293, 0.0648, 0.221, 0.0868, 0.172, 0.736, 0.089, 0.47, 0.180, 0.188), nrow=4)
+x_given_y
+x <- c(0.25, 0.25, 0.25, 0.25)
+sum(x*log2(x))
+prior_entropy <- -1*sum(x*log2(x))
+prior_entropy
+post_entropy1 <- sum(x_given_y * log2(x_given_y))
+post_entropy1
+post_entropy1 <- x_given_y * log2(x_given_y)
+post_entropy1
+post_entropy2 <- y[1]*sum(post_entropy1[1])
+post_entropy2
+post_entropy2 <- y[1]*sum(post_entropy1[1,])
+post_entropy2
+post_entropy2 <- y[1]*sum(post_entropy1[1,]) + y[2]*sum(post_entropy1[2,])
+post_entropy2 <- y[1]*sum(post_entropy1[1,]) + y[2]*sum(post_entropy1[2,]) + y[3]*sum(post_entropy1[3,]) + y[4]*sum(post_entropy1[5,])
+post_entropy2 <- y[1]*sum(post_entropy1[1,]) + y[2]*sum(post_entropy1[2,]) + y[3]*sum(post_entropy1[3,]) + y[4]*sum(post_entropy1[4,])
+post_entropy2
+post_entropy2 <- -1*(y[1]*sum(post_entropy1[1,]) + y[2]*sum(post_entropy1[2,]) + y[3]*sum(post_entropy1[3,]) + y[4]*sum(post_entropy1[4,]))
+post_entropy2
+post_entropy3 <- apply(post_entropy1, 1, function(x) sum(y*sum(x)))
+post_entropy3
+prior_entropy - post_entropy2
+Xray Entropy Reduction#
+prior_bel1 <- cpquery(cancer_fit, (Cancer=="T"), TRUE)#
+prior_bel2 <- cpquery(cancer_fit, (Cancer=="F"), TRUE)#
+prior_ent <- -1*(prior_bel1*log2(prior_bel1)+prior_bel2*log2(prior_bel2))#
 #
-HB_emptymatrix2 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q2_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q2_cells[,1]))))#
+post_bel1 <- cpquery(cancer_fit, Xray=="Pos", TRUE)#
+post_bel2 <- cpquery(cancer_fit, Xray=="Neg", TRUE)#
 #
-HB_emptymatrix3 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q3_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q3_cells[,1]))))#
+prob_xray <- c(post_bel1, post_bel2)#
 #
-HB_emptymatrix4 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q4_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q4_cells[,1]))))#
+post_bel11 <- cpquery(cancer_fit, Cancer=="T", Xray=="Pos")#
+post_bel12 <- cpquery(cancer_fit, Cancer=="T", Xray=="Neg")#
 #
-HB_emptymatrix5 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q5_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q5_cells[,1]))))#
+post_bel21 <- cpquery(cancer_fit, Cancer=="F", Xray=="Pos")#
+post_bel22 <- cpquery(cancer_fit, Cancer=="F", Xray=="Neg")#
 #
-HB_emptymatrix6 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q6_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q6_cells[,1]))))#
+prob_cond <- matrix(c(post_bel11, post_bel12, post_bel21, post_bel22), nrow=2)
+prob_cond
+post_bel21
+prob_cond_prod <- prob_cond * log2(prob_cond)
+prob_cond_prod
+post_ent <- -1*(prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,]))
+(prior_ent - post_ent)
+(prior_ent - post_ent)/prior_ent*100
+Smoking Entropy Reduction#
+post_bel1 <- cpquery(cancer_fit, Smoker=="T", TRUE)#
+post_bel2 <- cpquery(cancer_fit, Smoker=="F", TRUE)#
 #
-HB_emptymatrix7 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q7_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q6_cells[,1]))))
-HB_emptymatrix7 <- matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q7_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q7_cells[,1]))))
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix1[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q1_cells)) {#
-		HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-}#
+prob_smoker <- c(post_bel1, post_bel2)#
 #
-HB_emptymatrix2[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix2[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q2_cells)) {#
-  HB_emptymatrix2[,i+2] <- HB_q2_cells[i,2]<=HB_states[,2] & HB_q2_cells[i,2]>HB_states[-1,2]#
-}#
+post_bel11 <- cpquery(cancer_fit, Cancer=="T", Smoker=="T")#
+post_bel12 <- cpquery(cancer_fit, Cancer=="T", Smoker=="F")#
 #
-HB_emptymatrix3[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix3[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q3_cells)) {#
-  HB_emptymatrix3[,i+2] <- HB_q3_cells[i,2]<=HB_states[,2] & HB_q3_cells[i,2]>HB_states[-1,2]#
-}#
+post_bel21 <- cpquery(cancer_fit, Cancer=="F", Smoker=="T")#
+post_bel22 <- cpquery(cancer_fit, Cancer=="F", Smoker=="F")#
 #
-HB_emptymatrix4[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix4[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q4_cells)) {#
-  HB_emptymatrix4[,i+2] <- HB_q4_cells[i,2]<=HB_states[,2] & HB_q4_cells[i,2]>HB_states[-1,2]#
-}#
+prob_cond <- matrix(c(post_bel11, post_bel12, post_bel21, post_bel22), nrow=2)#
+prob_cond_prod <- prob_cond * log2(prob_cond)#
 #
-HB_emptymatrix5[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix5[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q5_cells)) {#
-  HB_emptymatrix5[,i+2] <- HB_q5_cells[i,2]<=HB_states[,2] & HB_q5_cells[i,2]>HB_states[-1,2]#
-}#
+post_ent <- -1*(prob_smoker[1] * sum(prob_cond_prod[1,]) + prob_smoker[2] * sum(prob_cond_prod[2,]))#
 #
-HB_emptymatrix6[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix6[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q6_cells)) {#
-  HB_emptymatrix6[,i+2] <- HB_q6_cells[i,2]<=HB_states[,2] & HB_q6_cells[i,2]>HB_states[-1,2]#
-}#
+(prior_ent - post_ent)
+Pollution Entropy Reduction#
+post_bel1 <- cpquery(cancer_fit, Pollution=="L", TRUE)#
+post_bel2 <- cpquery(cancer_fit, Pollution=="H", TRUE)#
 #
-HB_emptymatrix7[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix7[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q7_cells)) {#
-  HB_emptymatrix7[,i+2] <- HB_q7_cells[i,2]<=HB_states[,2] & HB_q7_cells[i,2]>HB_states[-1,2]#
-}
-HB_evidence1 <- populate.evidence(HB_q1_cells, HB_emptymatrix1)
-head(HB_evidence1)
-HB_evidence1
-HB_emptymatrix1
-HB_evidence1 <- populate.evidence(HB_q1_cells, HB_emptymatrix1)
-str(HB_evidence1)
-str(HB_emptymatrix1)
-head(HB_emptymatrix1)
-rm(HB_emptymatrix1)
-HB_emptymatrix1 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q1_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q1_cells[,1]))))
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))
-HB_emptymatrix1[,2] <- as.vector(as.matrix(HB_recess_subset))
-for (i in 1:nrow(HB_q1_cells)) {#
-		HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-}
-HB_evidence1 <- populate.evidence(HB_q1_cells, HB_emptymatrix1)
-str(HB_evidence1)
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix1[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q1_cells)) {#
-		HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-}#
+prob_pollution <- c(post_bel1, post_bel2)#
 #
-HB_emptymatrix2[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix2[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q2_cells)) {#
-  HB_emptymatrix2[,i+2] <- HB_q2_cells[i,2]<=HB_states[,2] & HB_q2_cells[i,2]>HB_states[-1,2]#
-}#
+post_bel11 <- cpquery(cancer_fit, Cancer=="T", Pollution=="L")#
+post_bel12 <- cpquery(cancer_fit, Cancer=="T", Pollution=="H")#
 #
-HB_emptymatrix3[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix3[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q3_cells)) {#
-  HB_emptymatrix3[,i+2] <- HB_q3_cells[i,2]<=HB_states[,2] & HB_q3_cells[i,2]>HB_states[-1,2]#
-}#
+post_bel21 <- cpquery(cancer_fit, Cancer=="F", Pollution=="L")#
+post_bel22 <- cpquery(cancer_fit, Cancer=="F", Pollution=="H")#
 #
-HB_emptymatrix4[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix4[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q4_cells)) {#
-  HB_emptymatrix4[,i+2] <- HB_q4_cells[i,2]<=HB_states[,2] & HB_q4_cells[i,2]>HB_states[-1,2]#
-}#
+prob_cond <- matrix(c(post_bel11, post_bel12, post_bel21, post_bel22), nrow=2)#
+prob_cond_prod <- prob_cond * log2(prob_cond)#
 #
-HB_emptymatrix5[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix5[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q5_cells)) {#
-  HB_emptymatrix5[,i+2] <- HB_q5_cells[i,2]<=HB_states[,2] & HB_q5_cells[i,2]>HB_states[-1,2]#
-}#
+post_ent <- -1*(prob_pollution[1] * sum(prob_cond_prod[1,]) + prob_pollution[2] * sum(prob_cond_prod[2,]))
+(prior_ent - post_ent)
+cancer_fit
+cancer_fit[1]
+str(cancer_fit)
+cpt_Pollution <- matrix(c(0.9, 0.1), ncol=2, dimnames=list(NULL, "Pollution"=dim_Pollution))#
+cpt_Smoker <- matrix(c(0.3, 0.7), ncol=2, dimnames=list(NULL, "Smoker"=dim_Smoker))#
+cpt_Cancer <- matrix(c(0.03, 0.97, 0.001, 0.999, 0.05, 0.95, 0.02, 0.98))#
+dim(cpt_Cancer) <- c(2, 2, 2)#
+dimnames(cpt_Cancer) <- list("Cancer"=dim_Cancer, "Smoker"=dim_Smoker, "Pollution"=dim_Pollution)#
+cpt_Xray <- matrix(c(0.9, 0.1, 0.2, 0.8), ncol=2, dimnames=list("Xray"=dim_Xray,"Cancer"=dim_Cancer))#
+cpt_Dyspnoea <- matrix(c(0.65, 0.35, 0.3, 0.7), ncol=2, dimnames=list("Dyspnoea"=dim_Dyspnoea, "Cancer"=dim_Cancer))#
 #
-HB_emptymatrix6[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix6[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q6_cells)) {#
-  HB_emptymatrix6[,i+2] <- HB_q6_cells[i,2]<=HB_states[,2] & HB_q6_cells[i,2]>HB_states[-1,2]#
-}#
+cancer_fit <- custom.fit(cancer_dag, dist=list(Pollution=cpt_Pollution, Smoker=cpt_Smoker, Cancer=cpt_Cancer, Xray=cpt_Xray, Dyspnoea=cpt_Dyspnoea))
+Load packages #####
+# Load "bnlearn" package#
+library(bnlearn)#
 #
-HB_emptymatrix7[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix7[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q7_cells)) {#
-  HB_emptymatrix7[,i+2] <- HB_q7_cells[i,2]<=HB_states[,2] & HB_q7_cells[i,2]>HB_states[-1,2]#
-}
-HB_evidence1 <- populate.evidence(HB_q1_cells, HB_emptymatrix1)#
-HB_evidence2 <- populate.evidence(HB_q2_cells, HB_emptymatrix2)#
-HB_evidence3 <- populate.evidence(HB_q3_cells, HB_emptymatrix3)#
-HB_evidence4 <- populate.evidence(HB_q4_cells, HB_emptymatrix4)#
-HB_evidence5 <- populate.evidence(HB_q5_cells, HB_emptymatrix5)#
-HB_evidence6 <- populate.evidence(HB_q6_cells, HB_emptymatrix6)#
-HB_evidence7 <- populate.evidence(HB_q7_cells, HB_emptymatrix7)#
-save(HB_evidence1, file="output/site1/HB_evidence1.Rdata")#
-save(HB_evidence2, file="output/site1/HB_evidence2.Rdata")#
-save(HB_evidence3, file="output/site1/HB_evidence3.Rdata")#
-save(HB_evidence4, file="output/site1/HB_evidence4.Rdata")#
-save(HB_evidence5, file="output/site1/HB_evidence5.Rdata")#
-save(HB_evidence6, file="output/site1/HB_evidence6.Rdata")#
-save(HB_evidence7, file="output/site1/HB_evidence7.Rdata")
-str (HB_evidence3)
-head(HB_evidence3)
-HB_emptymatrix1 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q1_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q1_cells[,1]))))#
+# Name network variables#
+cancer_var <- c("Pollution", "Smoker", "Cancer", "Xray", "Dyspnoea")#
 #
-HB_emptymatrix2 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q2_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q2_cells[,1]))))#
+# Create empty network#
+cancer_dag <- empty.graph(cancer_var)#
 #
-HB_emptymatrix3 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q3_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q3_cells[,1]))))#
+# riparian_test <- model2network("[TIMING][DEPTH][FLOOD|TIMING][RECESSION|TIMING][HYDRO|FLOOD:RECESSION][POTENTIAL|HYDRO:DEPTH]")#
 #
-HB_emptymatrix4 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q4_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q4_cells[,1]))))#
+# Connect variables with directed arcs#
+arcs(cancer_dag) <- matrix(#
+	c("Pollution", "Cancer", "Smoker", "Cancer", "Cancer", "Xray", "Cancer", "Dyspnoea"),#
+	ncol = 2, byrow = TRUE,#
+	dimnames = list(c(), c("from", "to")))#
 #
-HB_emptymatrix5 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q5_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q5_cells[,1]))))#
+#### Discrete States #####
+# Set discrete states for each node#
 #
-HB_emptymatrix6 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q6_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q6_cells[,1]))))#
+dim_Pollution <- c("L", "H")#
+dim_Smoker <- c("T", "F")#
+dim_Cancer <- c("T", "F")#
+dim_Xray <- c("Pos", "Neg")#
+dim_Dyspnoea <- c("T", "F")#
+#### CPT Assignments #####
+cpt_Pollution <- matrix(c(0.9, 0.1), ncol=2, dimnames=list(NULL, "Pollution"=dim_Pollution))#
+cpt_Smoker <- matrix(c(0.3, 0.7), ncol=2, dimnames=list(NULL, "Smoker"=dim_Smoker))#
+cpt_Cancer <- matrix(c(0.03, 0.97, 0.001, 0.999, 0.05, 0.95, 0.02, 0.98))#
+dim(cpt_Cancer) <- c(2, 2, 2)#
+dimnames(cpt_Cancer) <- list("Cancer"=dim_Cancer, "Smoker"=dim_Smoker, "Pollution"=dim_Pollution)#
+cpt_Xray <- matrix(c(0.9, 0.1, 0.2, 0.8), ncol=2, dimnames=list("Xray"=dim_Xray,"Cancer"=dim_Cancer))#
+cpt_Dyspnoea <- matrix(c(0.65, 0.35, 0.3, 0.7), ncol=2, dimnames=list("Dyspnoea"=dim_Dyspnoea, "Cancer"=dim_Cancer))#
 #
-HB_emptymatrix7 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q7_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q7_cells[,1]))))#
+cancer_fit <- custom.fit(cancer_dag, dist=list(Pollution=cpt_Pollution, Smoker=cpt_Smoker, Cancer=cpt_Cancer, Xray=cpt_Xray, Dyspnoea=cpt_Dyspnoea))#
 #
-#### Populate empty matrices#
-# The warnings that appear when the empty matrices are populated are due to the differing lengths of the Boolean comparisons.#
-HB_emptymatrix1[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix1[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q1_cells)) {#
-		HB_emptymatrix1[,i+2] <- HB_q1_cells[i,2]<=HB_states[,2] & HB_q1_cells[i,2]>HB_states[-1,2]#
-}#
+#### CPT Assignments #####
+cpt_Pollution <- matrix(c(0.9, 0.1), ncol=2, dimnames=list(NULL, "Pollution"=dim_Pollution))#
+cpt_Smoker <- matrix(c(0.3, 0.7), ncol=2, dimnames=list(NULL, "Smoker"=dim_Smoker))#
+cpt_Cancer <- matrix(c(0.03, 0.97, 0.001, 0.999, 0.05, 0.95, 0.02, 0.98))#
+dim(cpt_Cancer) <- c(2, 2, 2)#
+dimnames(cpt_Cancer) <- list("Cancer"=dim_Cancer, "Smoker"=dim_Smoker, "Pollution"=dim_Pollution)#
+cpt_Xray <- matrix(c(0.9, 0.1, 0.2, 0.8), ncol=2, dimnames=list("Xray"=dim_Xray,"Cancer"=dim_Cancer))#
+cpt_Dyspnoea <- matrix(c(0.65, 0.35, 0.3, 0.7), ncol=2, dimnames=list("Dyspnoea"=dim_Dyspnoea, "Cancer"=dim_Cancer))#
 #
-HB_emptymatrix2[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix2[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q2_cells)) {#
-  HB_emptymatrix2[,i+2] <- HB_q2_cells[i,2]<=HB_states[,2] & HB_q2_cells[i,2]>HB_states[-1,2]#
-}#
-#
-HB_emptymatrix3[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix3[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q3_cells)) {#
-  HB_emptymatrix3[,i+2] <- HB_q3_cells[i,2]<=HB_states[,2] & HB_q3_cells[i,2]>HB_states[-1,2]#
-}#
-#
-HB_emptymatrix4[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix4[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q4_cells)) {#
-  HB_emptymatrix4[,i+2] <- HB_q4_cells[i,2]<=HB_states[,2] & HB_q4_cells[i,2]>HB_states[-1,2]#
-}#
-#
-HB_emptymatrix5[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix5[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q5_cells)) {#
-  HB_emptymatrix5[,i+2] <- HB_q5_cells[i,2]<=HB_states[,2] & HB_q5_cells[i,2]>HB_states[-1,2]#
-}#
-#
-HB_emptymatrix6[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix6[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q6_cells)) {#
-  HB_emptymatrix6[,i+2] <- HB_q6_cells[i,2]<=HB_states[,2] & HB_q6_cells[i,2]>HB_states[-1,2]#
-}#
-#
-HB_emptymatrix7[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix7[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q7_cells)) {#
-  HB_emptymatrix7[,i+2] <- HB_q7_cells[i,2]<=HB_states[,2] & HB_q7_cells[i,2]>HB_states[-1,2]#
-}#
-#
-# a <- vector("list", nrow(q1_cells))#
-# names(a) <- (q1_cells[,1])#
-# a[[1]] <- data.frame(matrix(test1[,1:3][test1[,3]==1], ncol=3))#
-# a[[1]] <- lapply(a[[1]], factor)#
-# names(a[[1]]) <- c("TIMING", "RECESSION", "FLOOD")#
-# w <- a[[1]][1]#
-# x <- a[[1]][2]#
-# v <- a[[1]][3]#
-# a[[1]] <- data.frame(w,x,v)#
-#
-#### Populate empty matrices with evidence #####
-HB_evidence1 <- populate.evidence(HB_q1_cells, HB_emptymatrix1)#
-HB_evidence2 <- populate.evidence(HB_q2_cells, HB_emptymatrix2)#
-HB_evidence3 <- populate.evidence(HB_q3_cells, HB_emptymatrix3)#
-HB_evidence4 <- populate.evidence(HB_q4_cells, HB_emptymatrix4)#
-HB_evidence5 <- populate.evidence(HB_q5_cells, HB_emptymatrix5)#
-HB_evidence6 <- populate.evidence(HB_q6_cells, HB_emptymatrix6)#
-HB_evidence7 <- populate.evidence(HB_q7_cells, HB_emptymatrix7)#
-save(HB_evidence1, file="output/site1/HB_evidence1.Rdata")#
-save(HB_evidence2, file="output/site1/HB_evidence2.Rdata")#
-save(HB_evidence3, file="output/site1/HB_evidence3.Rdata")#
-save(HB_evidence4, file="output/site1/HB_evidence4.Rdata")#
-save(HB_evidence5, file="output/site1/HB_evidence5.Rdata")#
-save(HB_evidence6, file="output/site1/HB_evidence6.Rdata")#
-save(HB_evidence7, file="output/site1/HB_evidence7.Rdata")
-str(HB_evidence6)
-head(HB_evidence2)
-str(HB_evidence2)
-str(HB_evidence3)
-str(HB_evidence4)
-describe(HB_emptymatrix4)
-HB_evidence4 <- populate.evidence(HB_q4_cells, HB_emptymatrix4)
-HB_evidence4
-HB_emptymatrix4 <- big.matrix(nrow=nrow(HB_states), ncol=(nrow(HB_q4_cells)+2), dimnames=list(NULL, c("timing", "recess", as.character(HB_q4_cells[,1]))))
-HB_emptymatrix4
-HB_emptymatrix4[,1] <- as.vector(as.matrix(HB_timing_subset))#
-HB_emptymatrix4[,2] <- as.vector(as.matrix(HB_recess_subset))#
-for (i in 1:nrow(HB_q4_cells)) {#
-  HB_emptymatrix4[,i+2] <- HB_q4_cells[i,2]<=HB_states[,2] & HB_q4_cells[i,2]>HB_states[-1,2]#
-}
-str(HB_emptymatrix4)
-describe(HB_emptymatrix4)
-str(HB_evidence5)
-str(HB_evidence6)
-str(HB_evidence7)
-str(HB_evidence3)
-str(HB_evidence4)
-system.time(HB_q4_cell_probs <- lapply(HB_evidence4, apply, 1, function(x) cpquery(riparian.fit4, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))
-HB_emptymatrix4[,1] <- as.vector(as.matrix(HB_timing_subset))
-HB_emptymatrix4[,2] <- as.vector(as.matrix(HB_recess_subset))
-for (i in 1:nrow(HB_q4_cells)) {#
-  HB_emptymatrix4[,i+2] <- HB_q4_cells[i,2]<=HB_states[,2]#
-}
-HB_evidence4 <- populate.evidence(HB_q4_cells, HB_emptymatrix4)
-str(HB_evidence4)
-head(HB_states)
-test <- HB_states[,2]>=2500
-str(test)
-summary(test)
-test <- HB_states[,2]>=2000
-summary(test)
-rm(list=ls(all=TRUE))
+cancer_fit <- custom.fit(cancer_dag, dist=list(Pollution=cpt_Pollution, Smoker=cpt_Smoker, Cancer=cpt_Cancer, Xray=cpt_Xray, Dyspnoea=cpt_Dyspnoea))
+prior_bel1 <- cpquery(cancer_fit, (Cancer=="T"), TRUE)
+prior_bel2 <- cpquery(cancer_fit, (Cancer=="F"), TRUE)
+prior_ent <- -1*(prior_bel1*log2(prior_bel1)+prior_bel2*log2(prior_bel2))
+prior_ent
+post_bel1 <- cpquery(cancer_fit, Xray=="Pos", TRUE)
+post_bel2 <- cpquery(cancer_fit, Xray=="Neg", TRUE)
+prob_xray <- c(post_bel1, post_bel2)
+post_bel11 <- cpquery(cancer_fit, Cancer=="T", Xray=="Pos")
+post_bel12 <- cpquery(cancer_fit, Cancer=="T", Xray=="Neg")
+post_bel21 <- cpquery(cancer_fit, Cancer=="F", Xray=="Pos")
+post_bel22 <- cpquery(cancer_fit, Cancer=="F", Xray=="Neg")
+prob_cond <- matrix(c(post_bel11, post_bel12, post_bel21, post_bel22), nrow=2)
+prob_cond_log <- log2(prob_cond)
+prob_cond_prod <- prob_cond * log2(prob_cond)
+post_ent <- -1*(prob_xray[1] * sum(prob_cond_prod[1,]) + prob_xray[2] * sum(prob_cond_prod[2,]))
+post_ent
+(prior_ent - post_ent)/prior_ent*100
+prob_cond_prod
+prob_smoker
+prob_smoker <- c(post_bel1, post_bel2)
+prob_smoker
+post_bel1 <- cpquery(cancer_fit, Smoker=="T", TRUE)
+post_bel2 <- cpquery(cancer_fit, Smoker=="F", TRUE)
+prob_smoker <- c(post_bel1, post_bel2)
+post_bel11 <- cpquery(cancer_fit, Cancer=="T", Smoker=="T")
+post_bel12 <- cpquery(cancer_fit, Cancer=="T", Smoker=="F")
+post_bel21 <- cpquery(cancer_fit, Cancer=="F", Smoker=="T")
+post_bel22 <- cpquery(cancer_fit, Cancer=="F", Smoker=="F")
+prob_cond <- matrix(c(post_bel11, post_bel12, post_bel21, post_bel22), nrow=2)
+prob_cond
+post_ent <- -1*(prob_smoker[1] * sum(prob_cond_prod[1,]) + prob_smoker[2] * sum(prob_cond_prod[2,]))
+post_ent
+(prior_ent - post_ent)
 Hydrologic Data Processessing #####
 library(xts)#
 library(prob)#
@@ -1345,10 +425,10 @@ hist_base <- climate.hydrology("data/HAD_hist_base.csv")#
 # The regression equation was developed using historical gage data, and changes depending on the site location#
 #
 # SITE 1#
-head_conv <- function(Q) 0.0011*Q#
+# head_conv <- function(Q) 0.0011*Q#
 #
 # SITE 2#
-# head_conv <- function(Q) 0.0011*Q#
+head_conv <- function(Q) 0.0011*Q#
 #
 # SITE 3#
 # head_conv <- function(Q) 0.056*(Q^0.5612)#
@@ -1558,7 +638,7 @@ Read results from SRH-2D model #####
 set.seed(140)#
 #
 # Change input table depending on the site number#
-HB_alldata <- read.table("data/site1_1000_to_4000.txt", header=FALSE, skip=0)#
+HB_alldata <- read.table("data/site2_1000_to_4000.txt", header=FALSE, skip=0)#
 #
 colnames(HB_alldata) <- c("cell", "flood_cfs")#
 #
@@ -1578,7 +658,7 @@ HB_states <- subset(HB_states, TIMING != "NA" & RECESSION != 1)#
 HB_timing_subset <- HB_states[,15]#
 HB_recess_subset <- HB_states[,16]#
 #
-save(HB_states, file="output/site1/HB_states.Rdata")#
+save(HB_states, file="output/site2/HB_states.Rdata")#
 #
 #### Allow dimension naming using the "bigmemory" package #####
 options(bigmemory.allow.dimnames=TRUE)#
@@ -1660,27 +740,29 @@ HB_evidence4 <- populate.evidence(HB_q4_cells, HB_emptymatrix4)#
 HB_evidence5 <- populate.evidence(HB_q5_cells, HB_emptymatrix5)#
 HB_evidence6 <- populate.evidence(HB_q6_cells, HB_emptymatrix6)#
 HB_evidence7 <- populate.evidence(HB_q7_cells, HB_emptymatrix7)#
-save(HB_evidence1, file="output/site1/HB_evidence1.Rdata")#
-save(HB_evidence2, file="output/site1/HB_evidence2.Rdata")#
-save(HB_evidence3, file="output/site1/HB_evidence3.Rdata")#
-save(HB_evidence4, file="output/site1/HB_evidence4.Rdata")#
-save(HB_evidence5, file="output/site1/HB_evidence5.Rdata")#
-save(HB_evidence6, file="output/site1/HB_evidence6.Rdata")#
-save(HB_evidence7, file="output/site1/HB_evidence7.Rdata")
+save(HB_evidence1, file="output/site2/HB_evidence1.Rdata")#
+save(HB_evidence2, file="output/site2/HB_evidence2.Rdata")#
+save(HB_evidence3, file="output/site2/HB_evidence3.Rdata")#
+save(HB_evidence4, file="output/site2/HB_evidence4.Rdata")#
+save(HB_evidence5, file="output/site2/HB_evidence5.Rdata")#
+save(HB_evidence6, file="output/site2/HB_evidence6.Rdata")#
+save(HB_evidence7, file="output/site2/HB_evidence7.Rdata")#
+#
+#### Calculate recruitment probability by instantiating the BN with evidence #####
 system.time(HB_q1_cell_probs <- lapply(HB_evidence1, apply, 1, function(x) cpquery(riparian.fit1, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))#
-save(HB_q1_cell_probs, file="output/site1/HB_q1_cell_probs.Rdata")#
+save(HB_q1_cell_probs, file="output/site2/HB_q1_cell_probs.Rdata")#
 system.time(HB_q2_cell_probs <- lapply(HB_evidence2, apply, 1, function(x) cpquery(riparian.fit2, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))#
-save(HB_q2_cell_probs, file="output/site1/HB_q2_cell_probs.Rdata")#
+save(HB_q2_cell_probs, file="output/site2/HB_q2_cell_probs.Rdata")#
 system.time(HB_q3_cell_probs <- lapply(HB_evidence3, apply, 1, function(x) cpquery(riparian.fit3, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))#
-save(HB_q3_cell_probs, file="output/site1/HB_q3_cell_probs.Rdata")#
+save(HB_q3_cell_probs, file="output/site2/HB_q3_cell_probs.Rdata")#
 system.time(HB_q4_cell_probs <- lapply(HB_evidence4, apply, 1, function(x) cpquery(riparian.fit4, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))#
-save(HB_q4_cell_probs, file="output/site1/HB_q4_cell_probs.Rdata")#
+save(HB_q4_cell_probs, file="output/site2/HB_q4_cell_probs.Rdata")#
 system.time(HB_q5_cell_probs <- lapply(HB_evidence5, apply, 1, function(x) cpquery(riparian.fit5, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))#
-save(HB_q5_cell_probs, file="output/site1/HB_q5_cell_probs.Rdata")#
+save(HB_q5_cell_probs, file="output/site2/HB_q5_cell_probs.Rdata")#
 system.time(HB_q6_cell_probs <- lapply(HB_evidence6, apply, 1, function(x) cpquery(riparian.fit6, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))#
-save(HB_q6_cell_probs, file="output/site1/HB_q6_cell_probs.Rdata")#
+save(HB_q6_cell_probs, file="output/site2/HB_q6_cell_probs.Rdata")#
 system.time(HB_q7_cell_probs <- lapply(HB_evidence7, apply, 1, function(x) cpquery(riparian.fit7, (POTENTIAL=="Y"), evidence=as.list(x), method="lw")))#
-save(HB_q7_cell_probs, file="output/site1/HB_q7_cell_probs.Rdata")#
+save(HB_q7_cell_probs, file="output/site2/HB_q7_cell_probs.Rdata")#
 #
 HB_q1_cell_prob_mn <- t(data.frame(lapply(HB_q1_cell_probs, mean, na.rm=TRUE), check.names=FALSE))#
 HB_q2_cell_prob_mn <- t(data.frame(lapply(HB_q2_cell_probs, mean, na.rm=TRUE), check.names=FALSE))#
@@ -1717,21 +799,44 @@ if (!exists("HB_q7_cell_prob_mn")) HB_q_all_prob_mn <- rbind(HB_q1_cell_prob_mn,
 # if (!exists("q6_prob_mn_norm")) q_all_mn_norm_e <- rbind(q1_prob_mn_norm, q2_prob_mn_norm, q3_prob_mn_norm, q4_prob_mn_norm, q5_prob_mn_norm)#
 #
 #### Write csv file output #####
-# write.csv(q1_prob_mn_norm, file="output/site1/q1_prob_mn_norm_e.csv")#
-# write.csv(q2_prob_mn_norm, file="output/site1/q2_prob_mn_norm_e.csv")#
-# write.csv(q3_prob_mn_norm, file="output/site1/q3_prob_mn_norm_e.csv")#
-# write.csv(q4_prob_mn_norm, file="output/site1/q4_prob_mn_norm_e.csv")#
-# write.csv(q5_prob_mn_norm, file="output/site1/q5_prob_mn_norm_e.csv")#
-# write.csv(q6_prob_mn_norm, file="output/site1/q6_prob_mn_norm_e.csv")#
+# write.csv(q1_prob_mn_norm, file="output/site2/q1_prob_mn_norm_e.csv")#
+# write.csv(q2_prob_mn_norm, file="output/site2/q2_prob_mn_norm_e.csv")#
+# write.csv(q3_prob_mn_norm, file="output/site2/q3_prob_mn_norm_e.csv")#
+# write.csv(q4_prob_mn_norm, file="output/site2/q4_prob_mn_norm_e.csv")#
+# write.csv(q5_prob_mn_norm, file="output/site2/q5_prob_mn_norm_e.csv")#
+# write.csv(q6_prob_mn_norm, file="output/site2/q6_prob_mn_norm_e.csv")#
 #
 # Export File#
-write.csv(HB_q_all_prob_mn, file="output/site1/HB_q_all_prob_mn.csv")#
-HB_q_all_prob_mn2 <- read.csv("output/site1/HB_q_all_prob_mn.csv")#
+write.csv(HB_q_all_prob_mn, file="output/site2/HB_q_all_prob_mn.csv")#
+HB_q_all_prob_mn2 <- read.csv("output/site2/HB_q_all_prob_mn.csv")#
 colnames(HB_q_all_prob_mn2) <- c("cell","mean_prob")#
 HB_q_all_prob_mn2 <- HB_q_all_prob_mn2[order(HB_q_all_prob_mn2$cell),]#
-write.csv(HB_q_all_prob_mn2, file="output/site1/HB_q_all_prob_mn.csv", row.names=FALSE)
-str(HB_q1_cell_prob_mn)
-head(HB_q1_cell_prob_mn)
-head(HB_q2_cell_prob_mn)
-head(HB_q3_cell_prob_mn)
-head(HB_q4_cell_prob_mn)
+write.csv(HB_q_all_prob_mn2, file="output/site2/HB_q_all_prob_mn.csv", row.names=FALSE)#
+#
+# Site 2#
+# write.csv(q_all_mn_norm_e, file="output/site2/q_all_mn_norm_site2_e.csv")#
+# q_all_mn_norm_e2 <- read.csv("output/site2/q_all_mn_norm_site2_e.csv")#
+# colnames(q_all_mn_norm_e2) <- c("cell","mean_prob")#
+# q_all_mn_norm_e2 <- q_all_mn_norm_e2[order(q_all_mn_norm_e2$cell),]#
+# write.csv(q_all_mn_norm_e2, file="output/site2/q_all_mn_norm_site2_e.csv", row.names=FALSE)#
+#
+# Site 3#
+# write.csv(q_all_mn_norm_e, file="output/site2/q_all_mn_norm_site2_e.csv")#
+# q_all_mn_norm_e2 <- read.csv("output/site2/q_all_mn_norm_site2_e.csv")#
+# colnames(q_all_mn_norm_e2) <- c("cell","mean_prob")#
+# q_all_mn_norm_e2 <- q_all_mn_norm_e2[order(q_all_mn_norm_e2$cell),]#
+# write.csv(q_all_mn_norm_e2, file="output/site2/q_all_mn_norm_site2_e.csv", row.names=FALSE)#
+#
+# # Site 4#
+# write.csv(q_all_mn_norm_e, file="output/site2/q_all_mn_norm_site2_e.csv")#
+# q_all_mn_norm_e2 <- read.csv("output/site2/q_all_mn_norm_site2_e.csv")#
+# colnames(q_all_mn_norm_e2) <- c("cell","mean_prob")#
+# q_all_mn_norm_e2 <- q_all_mn_norm_e2[order(q_all_mn_norm_e2$cell),]#
+# write.csv(q_all_mn_norm_e2, file="output/site2/q_all_mn_norm_site2_e.csv", row.names=FALSE)#
+#
+# Site 5#
+# write.csv(q_all_mn_norm_e, file="output/site2/q_all_mn_norm_site2_e.csv")#
+# q_all_mn_norm_e2 <- read.csv("output/site2/q_all_mn_norm_site2_e.csv")#
+# colnames(q_all_mn_norm_e2) <- c("cell","mean_prob")#
+# q_all_mn_norm_e2 <- q_all_mn_norm_e2[order(q_all_mn_norm_e2$cell),]#
+# write.csv(q_all_mn_norm_e2, file="output/site2/q_all_mn_norm_site2_e.csv", row.names=FALSE)
