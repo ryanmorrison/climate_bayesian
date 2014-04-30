@@ -272,10 +272,10 @@
 	"buffers":
 	[
 		{
-			"file": "r_code/1-functions.R",
+			"file": "/Users/Morrison/Documents/Faculty Applications/Bureau of Reclamation/Resume/Morrison Resume.tex",
 			"settings":
 			{
-				"buffer_size": 17683,
+				"buffer_size": 27029,
 				"line_ending": "Unix"
 			}
 		}
@@ -388,9 +388,12 @@
 	},
 	"file_history":
 	[
+		"/Users/Morrison/Documents/Curriculum vitae/Latex CV/Morrison CV.tex",
+		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/CV/Morrison CV.tex",
 		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/2a-historical_baseline_processing.R",
 		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/3-bayesian_network_construct.R",
 		"/Users/Morrison/Documents/Research Projects/Riparian Bayesian Network/climate_bayesian/r_code/4a-implement_historical_baseline.R",
+		"/Users/Morrison/scripts/eject_destination.sh",
 		"/Users/Morrison/Documents/Scripts/test.sh",
 		"/Users/Morrison/scripts/test.sh",
 		"/Users/Morrison/Desktop/Shafroth et al._2010_Freshwater Biology.txt",
@@ -418,7 +421,6 @@
 		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/SublimeREPL.sublime-settings",
 		"/Users/Morrison/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
 		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/Teaching Statement/Teaching Statement.tex",
-		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/CV/Morrison CV.tex",
 		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/Research Statement/Research Statement.tex",
 		"/Users/Morrison/Downloads/Spatial E-Flows/full_article.tex",
 		"/Users/Morrison/Documents/Faculty Applications/University of Nevada Reno/References/References.tex",
@@ -428,7 +430,6 @@
 		"/Users/Morrison/Documents/Dissertation/LaTeX/Morrison Dissertation.tex/mmd-scrivcustom-begin-doc.tex",
 		"/Users/Morrison/Documents/Dissertation/LaTeX/Morrison Dissertation.tex/Morrison Dissertation.tex",
 		"/Users/Morrison/Documents/Dissertation/dissertation_latex/unm_begin-doc.tex",
-		"/Users/Morrison/Documents/Curriculum vitae/Latex CV/Morrison CV.tex",
 		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/LaTeX/Morrison Stone WRR Manuscript.tex",
 		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/cover letter/cover_letter.tex",
 		"/Users/Morrison/Dropbox/WRR Bayesian Manuscript/key points.txt",
@@ -514,8 +515,7 @@
 		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/data/usgs_11251000_daily_iha.txt",
 		"/Users/Morrison/Dropbox/Gila Bayesian/bayesian_network/data/usgs_11251000_daily.txt",
 		"/Users/Morrison/Documents/Dissertation/Scrivener_version_2/chapter_4_material/tables/1-scenarios table.txt",
-		"/Users/Morrison/Documents/Dissertation/Scrivener_version_2/Morrison Dissertation.tex/Morrison Dissertation.tex",
-		"/Users/Morrison/Documents/Dissertation/Scrivener version 2/Morrison Dissertation.tex/Morrison Dissertation.tex"
+		"/Users/Morrison/Documents/Dissertation/Scrivener_version_2/Morrison Dissertation.tex/Morrison Dissertation.tex"
 	],
 	"find":
 	{
@@ -533,6 +533,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"site4",
+			"site3",
 			"site2",
 			"site2_1000_to_4000",
 			"site1",
@@ -761,29 +763,27 @@
 			[
 				{
 					"buffer": 0,
-					"file": "r_code/1-functions.R",
-					"semi_transient": true,
+					"file": "/Users/Morrison/Documents/Faculty Applications/Bureau of Reclamation/Resume/Morrison Resume.tex",
+					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 17683,
+						"buffer_size": 27029,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6735,
-								6735
+								3144,
+								3144
 							]
 						],
 						"settings":
 						{
 							"WordCountShouldRun": true,
-							"bs_sintax": "enhanced-r",
-							"buffer_scroll_name": "068a2aeb",
-							"syntax": "Packages/Enhanced-R/support/Enhanced-R.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
+							"bs_sintax": "latex",
+							"buffer_scroll_name": "43c64499",
+							"syntax": "Packages/LaTeX/LaTeX.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -874,7 +874,7 @@
 	"show_minimap": false,
 	"show_open_files": true,
 	"show_tabs": true,
-	"side_bar_visible": true,
+	"side_bar_visible": false,
 	"side_bar_width": 215.0,
 	"status_bar_visible": true,
 	"template_settings":
